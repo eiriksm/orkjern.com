@@ -1,0 +1,3 @@
+[submodule "drupal/themes/orkjern_theme"]
+	path = drupal/themes/orkjern_theme
+	url = https://github.com/eiriksm/orkjern_theme.git
