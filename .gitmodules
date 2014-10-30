@@ -1,3 +1,6 @@
 [submodule "drupal/themes/orkjern_theme"]
 	path = drupal/themes/orkjern_theme
 	url = https://github.com/eiriksm/orkjern_theme.git
+[submodule "drupal/modules/orkjern_theme_cache"]
+	path = drupal/modules/orkjern_theme_cache
+	url = https://github.com/eiriksm/orkjern_theme_cache.git
