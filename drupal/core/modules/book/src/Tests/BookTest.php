@@ -52,8 +52,19 @@ class BookTest extends WebTestBase {
    */
   protected $adminUser;
 
+  /**
+   * A user without the 'node test view' permission.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected $webUserWithoutNodeAccess;
+
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
+    $this->drupalPlaceBlock('system_breadcrumb_block');
 
     // node_access_test requires a node_access_rebuild().
     node_access_rebuild();
@@ -61,6 +72,7 @@ class BookTest extends WebTestBase {
     // Create users.
     $this->bookAuthor = $this->drupalCreateUser(array('create new books', 'create book content', 'edit own book content', 'add content to books'));
     $this->webUser = $this->drupalCreateUser(array('access printer-friendly version', 'node test view'));
+    $this->webUserWithoutNodeAccess = $this->drupalCreateUser(array('access printer-friendly version'));
     $this->adminUser = $this->drupalCreateUser(array('create new books', 'create book content', 'edit own book content', 'add content to books', 'administer blocks', 'administer permissions', 'administer book outlines', 'node test view', 'administer content types', 'administer site configuration'));
   }
 
@@ -481,9 +493,9 @@ class BookTest extends WebTestBase {
     //   'page',
     // );
     // @endcode
-    $current_config = \Drupal::config('book.settings')->get();
+    $current_config = $this->config('book.settings')->get();
     $this->drupalPostForm('admin/structure/book/settings', array(), t('Save configuration'));
-    $this->assertIdentical($current_config, \Drupal::config('book.settings')->get());
+    $this->assertIdentical($current_config, $this->config('book.settings')->get());
 
     // Change the name, machine name and description.
     $edit = array(
@@ -502,9 +514,9 @@ class BookTest extends WebTestBase {
     //   'zebra',
     // );
     // @endcode
-    $current_config = \Drupal::config('book.settings')->get();
+    $current_config = $this->config('book.settings')->get();
     $this->drupalPostForm('admin/structure/book/settings', array(), t('Save configuration'));
-    $this->assertIdentical($current_config, \Drupal::config('book.settings')->get());
+    $this->assertIdentical($current_config, $this->config('book.settings')->get());
 
     $edit = array(
       'name' => 'Animal book',
@@ -520,13 +532,13 @@ class BookTest extends WebTestBase {
     //   'zebra',
     // );
     // @endcode
-    $current_config = \Drupal::config('book.settings')->get();
+    $current_config = $this->config('book.settings')->get();
     $this->drupalPostForm('admin/structure/book/settings', array(), t('Save configuration'));
-    $this->assertIdentical($current_config, \Drupal::config('book.settings')->get());
+    $this->assertIdentical($current_config, $this->config('book.settings')->get());
 
     // Ensure that after all the node type changes book.settings:child_type has
     // the expected value.
-    $this->assertEqual(\Drupal::config('book.settings')->get('child_type'), 'zebra');
+    $this->assertEqual($this->config('book.settings')->get('child_type'), 'zebra');
   }
 
   /**
@@ -658,6 +670,54 @@ class BookTest extends WebTestBase {
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('admin/structure/book');
     $this->assertText($this->book->label(), 'The book title is displayed on the administrative book listing page.');
+  }
+
+  /**
+   * Tests the administrative listing of all book pages in a book.
+   */
+  public function testAdminBookNodeListing() {
+    // Create a new book.
+    $this->createBook();
+    $this->drupalLogin($this->adminUser);
+
+    // Load the book page list and assert the created book title is displayed
+    // and action links are shown on list items.
+    $this->drupalGet('admin/structure/book/' . $this->book->id());
+    $this->assertText($this->book->label(), 'The book title is displayed on the administrative book listing page.');
+
+    $elements = $this->xpath('//table//ul[@class="dropbutton"]/li/a');
+    $this->assertEqual((string) $elements[0], 'View', 'View link is found from the list.');
+  }
+
+  /**
+   * Ensure the loaded book in hook_node_load() does not depend on the user.
+   */
+  public function testHookNodeLoadAccess() {
+    \Drupal::service('module_installer')->install(['node_access_test']);
+
+    // Ensure that the loaded book in hook_node_load() does NOT depend on the
+    // current user.
+    $this->drupalLogin($this->bookAuthor);
+    $this->book = $this->createBookNode('new');
+    // Reset any internal static caching.
+    $node_storage = \Drupal::entityManager()->getStorage('node');
+    $node_storage->resetCache();
+
+    // Login as user without access to the book node, so no 'node test view'
+    // permission.
+    // @see node_access_test_node_grants().
+    $this->drupalLogin($this->webUserWithoutNodeAccess);
+    $book_node = $node_storage->load($this->book->id());
+    $this->assertTrue(!empty($book_node->book));
+    $this->assertEqual($book_node->book['bid'], $this->book->id());
+
+    // Reset the internal cache to retrigger the hook_node_load() call.
+    $node_storage->resetCache();
+
+    $this->drupalLogin($this->webUser);
+    $book_node = $node_storage->load($this->book->id());
+    $this->assertTrue(!empty($book_node->book));
+    $this->assertEqual($book_node->book['bid'], $this->book->id());
   }
 
 }

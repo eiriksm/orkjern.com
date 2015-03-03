@@ -7,7 +7,9 @@
 
 namespace Drupal\Core\Utility;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
@@ -96,6 +98,13 @@ class Token {
   protected $moduleHandler;
 
   /**
+   * The cache tags invalidator.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * Constructs a new class instance.
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
@@ -104,11 +113,14 @@ class Token {
    *   The token cache.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
+   *   The cache tags invalidator.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, CacheBackendInterface $cache, LanguageManagerInterface $language_manager) {
+  public function __construct(ModuleHandlerInterface $module_handler, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, CacheTagsInvalidatorInterface $cache_tags_invalidator) {
     $this->cache = $cache;
     $this->languageManager = $language_manager;
     $this->moduleHandler = $module_handler;
+    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -185,9 +197,9 @@ class Token {
     // $type may not contain : or whitespace characters, but $name may.
     preg_match_all('/
       \[             # [ - pattern start
-      ([^\s\[\]:]*)  # match $type not containing whitespace : [ or ]
+      ([^\s\[\]:]+)  # match $type not containing whitespace : [ or ]
       :              # : - separator
-      ([^\[\]]*)     # match $name not containing [ or ]
+      ([^\[\]]+)     # match $name not containing [ or ]
       \]             # ] - pattern end
       /x', $text, $matches);
 
@@ -346,8 +358,6 @@ class Token {
    */
   public function resetInfo() {
     $this->tokenInfo = NULL;
-    $this->cache->deleteTags(array(
-      static::TOKEN_INFO_CACHE_TAG => TRUE,
-    ));
+    $this->cacheTagsInvalidator->invalidateTags([static::TOKEN_INFO_CACHE_TAG]);
   }
 }

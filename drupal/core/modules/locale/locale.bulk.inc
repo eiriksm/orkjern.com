@@ -165,7 +165,9 @@ function locale_translate_batch_build(array $files, array $options) {
 }
 
 /**
- * Perform interface translation import as a batch step.
+ * Implements callback_batch_operation().
+ *
+ * Perform interface translation import.
  *
  * @param object $file
  *   A file object of the gettext file to be imported. The file object must
@@ -262,7 +264,9 @@ function locale_translate_batch_import($file, array $options, array &$context) {
 }
 
 /**
- * Batch callback: Save data of imported files.
+ * Implements callback_batch_operation().
+ *
+ * Save data of imported files.
  *
  * @param array $context
  *   Contains a list of imported files.
@@ -285,6 +289,8 @@ function locale_translate_batch_import_save(array $context) {
 }
 
 /**
+ * Implements callback_batch_operation().
+ *
  * Refreshs translations after importing strings.
  *
  * @param array $context
@@ -346,6 +352,8 @@ function locale_translate_batch_refresh(array &$context) {
 }
 
 /**
+ * Implements callback_batch_finished().
+ *
  * Finished callback of system page locale import batch.
  *
  * @param bool $success
@@ -359,10 +367,10 @@ function locale_translate_batch_finished($success, array $results) {
     $additions = $updates = $deletes = $skips = $config = 0;
     if (isset($results['failed_files'])) {
       if (\Drupal::moduleHandler()->moduleExists('dblog') && \Drupal::currentUser()->hasPermission('access site reports')) {
-        $message = format_plural(count($results['failed_files']), 'One translation file could not be imported. <a href="@url">See the log</a> for details.', '@count translation files could not be imported. <a href="@url">See the log</a> for details.', array('@url' => \Drupal::url('dblog.overview')));
+        $message = \Drupal::translation()->formatPlural(count($results['failed_files']), 'One translation file could not be imported. <a href="@url">See the log</a> for details.', '@count translation files could not be imported. <a href="@url">See the log</a> for details.', array('@url' => \Drupal::url('dblog.overview')));
       }
       else {
-        $message = format_plural(count($results['failed_files']), 'One translation file could not be imported. See the log for details.', '@count translation files could not be imported. See the log for details.');
+        $message = \Drupal::translation()->formatPlural(count($results['failed_files']), 'One translation file could not be imported. See the log for details.', '@count translation files could not be imported. See the log for details.');
       }
       drupal_set_message($message, 'error');
     }
@@ -381,7 +389,7 @@ function locale_translate_batch_finished($success, array $results) {
           }
         }
       }
-      drupal_set_message(format_plural(count($results['files']),
+      drupal_set_message(\Drupal::translation()->formatPlural(count($results['files']),
         'One translation file imported. %number translations were added, %update translations were updated and %delete translations were removed.',
         '@count translation files imported. %number translations were added, %update translations were updated and %delete translations were removed.',
         array('%number' => $additions, '%update' => $updates, '%delete' => $deletes)
@@ -390,10 +398,10 @@ function locale_translate_batch_finished($success, array $results) {
 
       if ($skips) {
         if (\Drupal::moduleHandler()->moduleExists('dblog') && \Drupal::currentUser()->hasPermission('access site reports')) {
-          $message = format_plural($skips, 'One translation string was skipped because of disallowed or malformed HTML. <a href="@url">See the log</a> for details.', '@count translation strings were skipped because of disallowed or malformed HTML. <a href="@url">See the log</a> for details.', array('@url' => \Drupal::url('dblog.overview')));
+          $message = \Drupal::translation()->formatPlural($skips, 'One translation string was skipped because of disallowed or malformed HTML. <a href="@url">See the log</a> for details.', '@count translation strings were skipped because of disallowed or malformed HTML. <a href="@url">See the log</a> for details.', array('@url' => \Drupal::url('dblog.overview')));
         }
         else {
-          $message = format_plural($skips, 'One translation string was skipped because of disallowed or malformed HTML. See the log for details.', '@count translation strings were skipped because of disallowed or malformed HTML. See the log for details.');
+          $message = \Drupal::translation()->formatPlural($skips, 'One translation string was skipped because of disallowed or malformed HTML. See the log for details.', '@count translation strings were skipped because of disallowed or malformed HTML. See the log for details.');
         }
         drupal_set_message($message, 'warning');
         $logger->warning('@count disallowed HTML string(s) in files: @files.', array('@count' => $skips, '@files' => implode(',', $skipped_files)));
@@ -581,7 +589,9 @@ function locale_config_batch_build(array $names, array $langcodes, array $option
 }
 
 /**
- * Performs configuration translation refresh as a batch step.
+ * Implements callback_batch_operation().
+ *
+ * Performs configuration translation refresh.
  *
  * @param array $names
  *   An array of names of configuration objects to update.
@@ -605,6 +615,8 @@ function locale_config_batch_refresh_name(array $names, array $langcodes, array 
 }
 
 /**
+ * Implements callback_batch_finished().
+ *
  * Finishes callback of system page locale import batch.
  *
  * @param bool $success

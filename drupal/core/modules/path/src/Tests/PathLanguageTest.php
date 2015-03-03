@@ -21,6 +21,13 @@ class PathLanguageTest extends PathTestBase {
    */
   public static $modules = array('path', 'locale', 'content_translation');
 
+  /**
+   * An user with permissions to administer content types.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected $webUser;
+
   protected function setUp() {
     parent::setUp();
 
@@ -37,8 +44,8 @@ class PathLanguageTest extends PathTestBase {
       'translate any entity',
     );
     // Create and login user.
-    $this->web_user = $this->drupalCreateUser($permissions);
-    $this->drupalLogin($this->web_user);
+    $this->webUser = $this->drupalCreateUser($permissions);
+    $this->drupalLogin($this->webUser);
 
     // Enable French language.
     $edit = array();
@@ -59,6 +66,7 @@ class PathLanguageTest extends PathTestBase {
       'settings[node][page][settings][language][language_alterable]' => 1,
     );
     $this->drupalPostForm('admin/config/regional/content-language', $edit, t('Save configuration'));
+    \Drupal::entityManager()->clearCachedDefinitions();
 
     $definitions = \Drupal::entityManager()->getFieldDefinitions('node', 'page');
     $this->assertTrue($definitions['path']->isTranslatable(), 'Node path is translatable.');
@@ -111,11 +119,11 @@ class PathLanguageTest extends PathTestBase {
     $this->drupalGet('fr/' . $edit['path[0][alias]']);
     $this->assertText($french_node->body->value, 'Alias for French translation works.');
 
-    // Confirm that the alias is returned by _url(). Languages are cached on
+    // Confirm that the alias is returned for the URL. Languages are cached on
     // many levels, and we need to clear those caches.
     $this->container->get('language_manager')->reset();
     $languages = $this->container->get('language_manager')->getLanguages();
-    $url = $this->container->get('url_generator')->generateFromPath('node/' . $french_node->id(), array('language' => $languages['fr']));
+    $url = $french_node->url('canonical', array('language' => $languages['fr']));
 
     $this->assertTrue(strpos($url, $edit['path[0][alias]']), 'URL contains the path alias.');
 
@@ -131,7 +139,7 @@ class PathLanguageTest extends PathTestBase {
 
     // Change user language preference.
     $edit = array('preferred_langcode' => 'fr');
-    $this->drupalPostForm("user/" . $this->web_user->id() . "/edit", $edit, t('Save'));
+    $this->drupalPostForm("user/" . $this->webUser->id() . "/edit", $edit, t('Save'));
 
     // Check that the English alias works. In this situation French is the
     // current UI and content language, while URL language is English (since we

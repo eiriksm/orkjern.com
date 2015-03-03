@@ -138,8 +138,12 @@ class ImageWidget extends FileWidget {
 
     // Default image.
     $default_image = $field_settings['default_image'];
-    if (empty($default_image['fid'])) {
+    if (empty($default_image['uuid'])) {
       $default_image = $this->fieldDefinition->getFieldStorageDefinition()->getSetting('default_image');
+    }
+    // Convert the stored UUID into a file ID.
+    if (!empty($default_image['uuid']) && $entity = \Drupal::entityManager()->loadEntityByUuid('file', $default_image['uuid'])) {
+      $default_image['fid'] = $entity->id();
     }
     $element['#default_image'] = !empty($default_image['fid']) ? $default_image : array();
 
@@ -229,6 +233,7 @@ class ImageWidget extends FileWidget {
       '#maxlength' => 512,
       '#weight' => -12,
       '#access' => (bool) $item['fids'] && $element['#alt_field'],
+      '#required' => $element['#alt_field_required'],
       '#element_validate' => $element['#alt_field_required'] == 1 ? array(array(get_called_class(), 'validateRequiredFields')) : array(),
     );
     $element['title'] = array(
@@ -239,6 +244,7 @@ class ImageWidget extends FileWidget {
       '#maxlength' => 1024,
       '#weight' => -11,
       '#access' => (bool) $item['fids'] && $element['#title_field'],
+      '#required' => $element['#title_field_required'],
       '#element_validate' => $element['#title_field_required'] == 1 ? array(array(get_called_class(), 'validateRequiredFields')) : array(),
     );
 
@@ -264,13 +270,10 @@ class ImageWidget extends FileWidget {
       if (!array_key_exists($field, $image_field)) {
         return;
       }
-      // Check if field is left empty.
-      elseif (empty($image_field[$field])) {
-        $form_state->setError($element, t('The field !title is required', array('!title' => $element['#title'])));
-        return;
-      }
+    }
+    else {
+      $form_state->setLimitValidationErrors([]);
     }
   }
-
 
 }

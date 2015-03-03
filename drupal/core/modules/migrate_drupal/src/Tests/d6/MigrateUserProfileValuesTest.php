@@ -8,9 +8,8 @@
 namespace Drupal\migrate_drupal\Tests\d6;
 
 use Drupal\migrate\MigrateExecutable;
-use Drupal\migrate_drupal\Tests\Dump\Drupal6User;
-use Drupal\migrate_drupal\Tests\Dump\Drupal6UserProfileFields;
-use Drupal\migrate_drupal\Tests\MigrateDrupalTestBase;
+use Drupal\Core\Database\Database;
+use Drupal\migrate_drupal\Tests\d6\MigrateDrupal6TestBase;
 use Drupal\user\Entity\User;
 
 /**
@@ -18,7 +17,7 @@ use Drupal\user\Entity\User;
  *
  * @group migrate_drupal
  */
-class MigrateUserProfileValuesTest extends MigrateDrupalTestBase {
+class MigrateUserProfileValuesTest extends MigrateDrupal6TestBase {
 
   /**
    * The modules to be enabled during the test.
@@ -88,24 +87,6 @@ class MigrateUserProfileValuesTest extends MigrateDrupalTestBase {
       'type' => 'boolean',
     ))->save();
 
-    // Create the field instances.
-    foreach (Drupal6UserProfileFields::getData('profile_fields') as $field) {
-      entity_create('field_config', array(
-        'label' => $field['title'],
-        'description' => '',
-        'field_name' => $field['name'],
-        'entity_type' => 'user',
-        'bundle' => 'user',
-        'required' => 0,
-      ))->save();
-    }
-
-    // Create some users to migrate the profile data to.
-    foreach (Drupal6User::getData('users') as $u) {
-      $user = entity_create('user', $u);
-      $user->enforceIsNew();
-      $user->save();
-    }
     // Add some id mappings for the dependant migrations.
     $id_mappings = array(
       'd6_user_profile_field_instance' => array(
@@ -127,10 +108,37 @@ class MigrateUserProfileValuesTest extends MigrateDrupalTestBase {
 
     // Load database dumps to provide source data.
     $dumps = array(
-      $this->getDumpDirectory() . '/Drupal6UserProfileFields.php',
-      $this->getDumpDirectory() . '/Drupal6User.php',
+      $this->getDumpDirectory() . '/ProfileFields.php',
+      $this->getDumpDirectory() . '/Users.php',
+      $this->getDumpDirectory() . '/ProfileValues.php',
+      $this->getDumpDirectory() . '/UsersRoles.php',
+      $this->getDumpDirectory() . '/EventTimezones.php',
     );
     $this->loadDumps($dumps);
+    $field_data = Database::getConnection('default', 'migrate')
+      ->select('profile_fields', 'u')
+      ->fields('u')
+      ->execute()
+      ->fetchAll();
+    // Create the field instances.
+    foreach ($field_data as $field) {
+      entity_create('field_config', array(
+        'label' => $field->title,
+        'description' => '',
+        'field_name' => $field->name,
+        'entity_type' => 'user',
+        'bundle' => 'user',
+        'required' => 0,
+      ))->save();
+    }
+
+    // Create our users for the node authors.
+    $query = Database::getConnection('default', 'migrate')->query('SELECT * FROM {users} WHERE uid NOT IN (0, 1)');
+    while(($row = $query->fetchAssoc()) !== FALSE) {
+      $user = entity_create('user', $row);
+      $user->enforceIsNew();
+      $user->save();
+    }
 
     // Migrate profile fields.
     $migration_format = entity_load('migration', 'd6_profile_values:user');
@@ -144,24 +152,24 @@ class MigrateUserProfileValuesTest extends MigrateDrupalTestBase {
   public function testUserProfileValues() {
     $user = User::load(2);
     $this->assertFalse(is_null($user));
-    $this->assertEqual($user->profile_color->value, 'red');
-    $this->assertEqual($user->profile_biography->value, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam nulla sapien, congue nec risus ut, adipiscing aliquet felis. Maecenas quis justo vel nulla varius euismod. Quisque metus metus, cursus sit amet sem non, bibendum vehicula elit. Cras dui nisl, eleifend at iaculis vitae, lacinia ut felis. Nullam aliquam ligula volutpat nulla consectetur accumsan. Maecenas tincidunt molestie diam, a accumsan enim fringilla sit amet. Morbi a tincidunt tellus. Donec imperdiet scelerisque porta. Sed quis sem bibendum eros congue sodales. Vivamus vel fermentum est, at rutrum orci. Nunc consectetur purus ut dolor pulvinar, ut volutpat felis congue. Cras tincidunt odio sed neque sollicitudin, vehicula tempor metus scelerisque.');
-    $this->assertEqual($user->profile_sell_address->value, '1');
-    $this->assertEqual($user->profile_sold_to->value, 'Back\slash');
-    $this->assertEqual($user->profile_bands[0]->value, 'AC/DC');
-    $this->assertEqual($user->profile_bands[1]->value, 'Eagles');
-    $this->assertEqual($user->profile_bands[2]->value, 'Elton John');
-    $this->assertEqual($user->profile_bands[3]->value, 'Lemonheads');
-    $this->assertEqual($user->profile_bands[4]->value, 'Rolling Stones');
-    $this->assertEqual($user->profile_bands[5]->value, 'Queen');
-    $this->assertEqual($user->profile_bands[6]->value, 'The White Stripes');
-    $this->assertEqual($user->profile_birthdate->value, '1974-06-02');
+    $this->assertIdentical($user->profile_color->value, 'red');
+    $this->assertIdentical($user->profile_biography->value, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam nulla sapien, congue nec risus ut, adipiscing aliquet felis. Maecenas quis justo vel nulla varius euismod. Quisque metus metus, cursus sit amet sem non, bibendum vehicula elit. Cras dui nisl, eleifend at iaculis vitae, lacinia ut felis. Nullam aliquam ligula volutpat nulla consectetur accumsan. Maecenas tincidunt molestie diam, a accumsan enim fringilla sit amet. Morbi a tincidunt tellus. Donec imperdiet scelerisque porta. Sed quis sem bibendum eros congue sodales. Vivamus vel fermentum est, at rutrum orci. Nunc consectetur purus ut dolor pulvinar, ut volutpat felis congue. Cras tincidunt odio sed neque sollicitudin, vehicula tempor metus scelerisque.');
+    $this->assertIdentical($user->profile_sell_address->value, '1');
+    $this->assertIdentical($user->profile_sold_to->value, 'Back\slash');
+    $this->assertIdentical($user->profile_bands[0]->value, 'AC/DC');
+    $this->assertIdentical($user->profile_bands[1]->value, 'Eagles');
+    $this->assertIdentical($user->profile_bands[2]->value, 'Elton John');
+    $this->assertIdentical($user->profile_bands[3]->value, 'Lemonheads');
+    $this->assertIdentical($user->profile_bands[4]->value, 'Rolling Stones');
+    $this->assertIdentical($user->profile_bands[5]->value, 'Queen');
+    $this->assertIdentical($user->profile_bands[6]->value, 'The White Stripes');
+    $this->assertIdentical($user->profile_birthdate->value, '1974-06-02');
 
     $user = User::load(8);
-    $this->assertEqual($user->profile_sold_to->value, 'Forward/slash');
+    $this->assertIdentical($user->profile_sold_to->value, 'Forward/slash');
 
     $user = User::load(15);
-    $this->assertEqual($user->profile_sold_to->value, 'Dot.in.the.middle');
+    $this->assertIdentical($user->profile_sold_to->value, 'Dot.in.the.middle');
   }
 
 }

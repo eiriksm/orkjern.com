@@ -25,7 +25,7 @@ use Drupal\Core\Session\AccountInterface;
  * - Content language: The language used to present content that is available
  *   in more than one language.
  * - URL language: The language associated with URLs. When generating a URL,
- *   this value will be used by _url() as a default if no explicit preference is
+ *   this value will be used for URL's as a default if no explicit preference is
  *   provided.
  * Modules can define additional language types through
  * hook_language_types_info(), and alter existing language type definitions
@@ -201,6 +201,10 @@ interface LanguageNegotiatorInterface {
 
   /**
    * Updates the configuration based on the given language types.
+   *
+   * Stores the list of the language types along with information about their
+   * configurable state. Stores the default settings if the language type is
+   * not configurable.
    *
    * @param array $types
    *   An array of configurable language types.

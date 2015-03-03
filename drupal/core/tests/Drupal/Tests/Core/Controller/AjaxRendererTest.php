@@ -43,7 +43,7 @@ class AjaxRendererTest extends UnitTestCase {
   /**
    * Tests the content method.
    *
-   * @covers \Drupal\Core\Render\MainContent\AjaxRenderer::renderResponse
+   * @covers ::renderResponse
    */
   public function testRenderWithFragmentObject() {
     $main_content = ['#markup' => 'example content'];
@@ -70,6 +70,7 @@ class TestAjaxRenderer extends AjaxRenderer {
    * {@inheritdoc}
    */
   protected function drupalRenderRoot(&$elements, $is_root_call = FALSE) {
+    $elements += ['#attached' => []];
     if (isset($elements['#markup'])) {
       return $elements['#markup'];
     }

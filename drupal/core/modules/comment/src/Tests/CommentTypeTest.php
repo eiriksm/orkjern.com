@@ -21,7 +21,7 @@ use Drupal\node\Entity\Node;
 class CommentTypeTest extends CommentTestBase {
 
   /**
-   * Admin user
+   * Admin user.
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
@@ -108,7 +108,7 @@ class CommentTypeTest extends CommentTestBase {
     $this->drupalGet('admin/structure/comment');
     $this->assertRaw('Bar', 'New name was displayed.');
     $this->clickLink('Manage fields');
-    $this->assertUrl(\Drupal::url('field_ui.overview_comment', array('comment_type' => 'comment'), array('absolute' => TRUE)), [], 'Original machine name was used in URL.');
+    $this->assertUrl(\Drupal::url('entity.comment_type.field_ui_fields', ['comment_type' => 'comment'], ['absolute' => TRUE]), [], 'Original machine name was used in URL.');
     $this->assertTrue($this->cssSelect('tr#comment-body'), 'Body field exists.');
 
     // Remove the body field.
@@ -127,7 +127,7 @@ class CommentTypeTest extends CommentTestBase {
     // Create a comment type programmatically.
     $type = $this->createCommentType('foo');
     $this->drupalCreateContentType(array('type' => 'page'));
-    \Drupal::service('comment.manager')->addDefaultField('node', 'page', 'foo', CommentItemInterface::OPEN, 'foo');
+    $this->addDefaultCommentField('node', 'page', 'foo', CommentItemInterface::OPEN, 'foo');
     $field_storage = FieldStorageConfig::loadByName('node', 'foo');
 
     $this->drupalLogin($this->adminUser);
@@ -169,14 +169,14 @@ class CommentTypeTest extends CommentTestBase {
     // Attempt to delete the comment type, which should now be allowed.
     $this->drupalGet('admin/structure/comment/manage/' . $type->id() . '/delete');
     $this->assertRaw(
-      t('Are you sure you want to delete %type?', array('%type' => $type->id())),
+      t('Are you sure you want to delete the comment type %type?', array('%type' => $type->id())),
       'The comment type is available for deletion.'
     );
     $this->assertText(t('This action cannot be undone.'), 'The comment type deletion confirmation form is available.');
 
     // Test exception thrown when re-using an existing comment type.
     try {
-      \Drupal::service('comment.manager')->addDefaultField('comment', 'comment', 'bar');
+      $this->addDefaultCommentField('comment', 'comment', 'bar');
       $this->fail('Exception not thrown.');
     }
     catch (\InvalidArgumentException $e) {
@@ -186,7 +186,7 @@ class CommentTypeTest extends CommentTestBase {
     // Delete the comment type.
     $this->drupalPostForm('admin/structure/comment/manage/' . $type->id() . '/delete', array(), t('Delete'));
     $this->assertNull(CommentType::load($type->id()), 'Comment type deleted.');
-    $this->assertRaw(t('Comment type %label has been deleted.', array('%label' => $type->label())));
+    $this->assertRaw(t('The comment type %label has been deleted.', array('%label' => $type->label())));
   }
 
 }

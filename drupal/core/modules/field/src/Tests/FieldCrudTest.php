@@ -68,13 +68,17 @@ class FieldCrudTest extends FieldUnitTestBase {
    * Test the creation of a field.
    */
   function testCreateField() {
+    // Set a state flag so that field_test.module knows to add an in-memory
+    // constraint for this field.
+    \Drupal::state()->set('field_test_add_constraint', $this->fieldStorage->getName());
+    /** @var \Drupal\Core\Field\FieldConfigInterface $field */
     $field = entity_create('field_config', $this->fieldDefinition);
     $field->save();
 
     // Read the configuration. Check against raw configuration data rather than
     // the loaded ConfigEntity, to be sure we check that the defaults are
     // applied on write.
-    $config = \Drupal::config('field.field.' . $field->id())->get();
+    $config = $this->config('field.field.' . $field->id())->get();
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
 
     // Check that default values are set.
@@ -87,6 +91,17 @@ class FieldCrudTest extends FieldUnitTestBase {
 
     // Check that the denormalized 'field_type' was properly written.
     $this->assertEqual($config['field_type'], $this->fieldStorageDefinition['type']);
+
+    // Test constraints are applied. A Range constraint is added dynamically to
+    // limit the field to values between 0 and 32.
+    // @see field_test_entity_bundle_field_info_alter()
+    $this->doFieldValidationTests();
+
+    // Test FieldConfigBase::setPropertyConstraints().
+    \Drupal::state()->set('field_test_set_constraint', $this->fieldStorage->getName());
+    \Drupal::state()->set('field_test_add_constraint', FALSE);
+    \Drupal::entityManager()->clearCachedFieldDefinitions();
+    $this->doFieldValidationTests();
 
     // Guarantee that the field/bundle combination is unique.
     try {
@@ -192,10 +207,10 @@ class FieldCrudTest extends FieldUnitTestBase {
     entity_create('field_config', $this->fieldDefinition)->save();
     entity_create('field_config', $field_definition_2)->save();
     $field_storage->delete();
-    $this->assertFalse(FieldConfig::loadByName('entity_test', $this->fieldDefinition['bundle'], $field_storage->field_name));
-    $this->assertFalse(FieldConfig::loadByName('entity_test', $field_definition_2['bundle'], $field_storage->field_name));
+    $this->assertFalse(FieldConfig::loadByName('entity_test', $this->fieldDefinition['bundle'], $field_storage->getName()));
+    $this->assertFalse(FieldConfig::loadByName('entity_test', $field_definition_2['bundle'], $field_storage->getName()));
 
-    // Chack that deletion of the last field deletes the storage.
+    // Check that deletion of the last field deletes the storage.
     $field_storage = entity_create('field_storage_config', $this->fieldStorageDefinition);
     $field_storage->save();
     $field = entity_create('field_config', $this->fieldDefinition);
@@ -203,9 +218,9 @@ class FieldCrudTest extends FieldUnitTestBase {
     $field_2 = entity_create('field_config', $field_definition_2);
     $field_2->save();
     $field->delete();
-    $this->assertTrue(FieldStorageConfig::loadByName('entity_test', $field_storage->field_name));
+    $this->assertTrue(FieldStorageConfig::loadByName('entity_test', $field_storage->getName()));
     $field_2->delete();
-    $this->assertFalse(FieldStorageConfig::loadByName('entity_test', $field_storage->field_name));
+    $this->assertFalse(FieldStorageConfig::loadByName('entity_test', $field_storage->getName()));
 
     // Check that deletion of all fields using a storage simultaneously deletes
     // the storage.
@@ -216,7 +231,27 @@ class FieldCrudTest extends FieldUnitTestBase {
     $field_2 = entity_create('field_config', $field_definition_2);
     $field_2->save();
     $this->container->get('entity.manager')->getStorage('field_config')->delete(array($field, $field_2));
-    $this->assertFalse(FieldStorageConfig::loadByName('entity_test', $field_storage->field_name));
+    $this->assertFalse(FieldStorageConfig::loadByName('entity_test', $field_storage->getName()));
+  }
+
+  /**
+   * Tests configurable field validation.
+   *
+   * @see field_test_entity_bundle_field_info_alter()
+   */
+  protected function doFieldValidationTests() {
+    $entity = entity_create('entity_test');
+    $entity->set($this->fieldStorage->getName(), 1);
+    $violations = $entity->validate();
+    $this->assertEqual(count($violations), 0, 'No violations found when in-range value passed.');
+
+    $entity->set($this->fieldStorage->getName(), 33);
+    $violations = $entity->validate();
+    $this->assertEqual(count($violations), 1, 'Violations found when using value outside the range.');
+    $this->assertEqual($violations[0]->getPropertyPath(), $this->fieldStorage->getName() . '.0.value');
+    $this->assertEqual($violations[0]->getMessage(), t('This value should be %limit or less.', [
+      '%limit' => 32,
+    ]));
   }
 
 }

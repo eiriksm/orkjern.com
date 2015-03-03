@@ -34,7 +34,7 @@ class LocaleConfigTranslationTest extends WebTestBase {
 
     // Enable import of translations. By default this is disabled for automated
     // tests.
-    \Drupal::config('locale.settings')
+    $this->config('locale.settings')
       ->set('translation.import_enabled', TRUE)
       ->save();
   }
@@ -83,7 +83,7 @@ class LocaleConfigTranslationTest extends WebTestBase {
 
     // Get translation and check we've only got the site name.
     $translation = $wrapper->getTranslation($langcode);
-    $properties = $translation->getProperties();
+    $properties = $translation->getElements();
     $this->assertEqual(count($properties), 1, 'Got the right number of properties after translation');
 
     // Check the translated site name is displayed.

@@ -25,7 +25,7 @@ class LinkFieldTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('entity_test', 'link');
+  public static $modules = ['entity_test', 'link', 'node'];
 
   /**
    * A field to use in this test class.
@@ -41,22 +41,14 @@ class LinkFieldTest extends WebTestBase {
    */
   protected $field;
 
-  /**
-   * A user with permission to view and manage test entities.
-   *
-   * @var object
-   */
-  protected $web_user;
-
   protected function setUp() {
     parent::setUp();
 
-    $this->web_user = $this->drupalCreateUser(array(
+    $this->drupalLogin($this->drupalCreateUser([
       'view test entity',
       'administer entity_test content',
       'link to any page',
-    ));
-    $this->drupalLogin($this->web_user);
+    ]));
   }
 
   /**
@@ -96,31 +88,66 @@ class LinkFieldTest extends WebTestBase {
 
     // Display creation form.
     $this->drupalGet('entity_test/add');
-    $this->assertFieldByName("{$field_name}[0][url]", '', 'Link URL field is displayed');
+    $this->assertFieldByName("{$field_name}[0][uri]", '', 'Link URL field is displayed');
     $this->assertRaw('placeholder="http://example.com"');
 
     // Create a path alias.
     \Drupal::service('path.alias_storage')->save('admin', 'a/path/alias');
-    // Define some valid URLs.
+
+    // Create a node to test the link widget.
+    $node = $this->drupalCreateNode();
+
+    // Define some valid URLs (keys are the entered values, values are the
+    // strings displayed to the user).
     $valid_external_entries = array(
-      'http://www.example.com/',
+      'http://www.example.com/' => 'http://www.example.com/',
     );
     $valid_internal_entries = array(
-      'entity_test/add',
-      'a/path/alias',
+      '/entity_test/add' => '/entity_test/add',
+      '/a/path/alias' => '/a/path/alias',
+
+      // Front page, with query string and fragment.
+      '/' => '&lt;front&gt;',
+      '/?example=llama' => '&lt;front&gt;?example=llama',
+      '/#example' => '&lt;front&gt;#example',
+
+      // @todo '<front>' is valid input for BC reasons, may be removed by
+      //   https://www.drupal.org/node/2421941
+      '<front>' => '&lt;front&gt;',
+      '<front>#example' => '&lt;front&gt;#example',
+      '<front>?example=llama' =>'&lt;front&gt;?example=llama',
+
+      // Query string and fragment.
+      '?example=llama' => '?example=llama',
+      '#example' => '#example',
+
+      // Entity reference autocomplete value.
+      $node->label() . ' (1)' => $node->label() . ' (1)',
+      // Entity URI displayed as ER autocomplete value when displayed in a form.
+      'entity:node/1' => $node->label() . ' (1)',
+      // URI for an entity that exists, but is not accessible by the user.
+      'entity:user/1' => '- Restricted access - (1)',
+      // URI for an entity that doesn't exist, but with a valid ID.
+      'entity:user/999999' => 'entity:user/999999',
+      // URI for an entity that doesn't exist, with an invalid ID.
+      'entity:user/invalid-parameter' => 'entity:user/invalid-parameter',
     );
 
     // Define some invalid URLs.
+    $validation_error_1 = "The path '@link_path' is invalid.";
+    $validation_error_2 = 'Manually entered paths should start with /, ? or #.';
     $invalid_external_entries = array(
       // Missing protcol
-      'not-an-url',
+      'not-an-url' => $validation_error_2,
       // Invalid protocol
-      'invalid://not-a-valid-protocol',
+      'invalid://not-a-valid-protocol' => $validation_error_1,
       // Missing host name
-      'http://',
+      'http://' => $validation_error_1,
     );
     $invalid_internal_entries = array(
-      'non/existing/path',
+      '/non/existing/path' => $validation_error_1,
+      'no-leading-slash' => $validation_error_2,
+      'entity:non_existing_entity_type/yar' => $validation_error_1,
     );
 
     // Test external and internal URLs for 'link_type' = LinkItemInterface::LINK_GENERIC.
@@ -149,15 +176,15 @@ class LinkFieldTest extends WebTestBase {
    *   An array of valid URL entries.
    */
   protected function assertValidEntries($field_name, array $valid_entries) {
-    foreach ($valid_entries as $value) {
+    foreach ($valid_entries as $uri => $string) {
       $edit = array(
-        "{$field_name}[0][url]" => $value,
+        "{$field_name}[0][uri]" => $uri,
       );
       $this->drupalPostForm('entity_test/add', $edit, t('Save'));
       preg_match('|entity_test/manage/(\d+)|', $this->url, $match);
       $id = $match[1];
       $this->assertText(t('entity_test @id has been created.', array('@id' => $id)));
-      $this->assertRaw($value);
+      $this->assertRaw($string);
     }
   }
 
@@ -170,12 +197,12 @@ class LinkFieldTest extends WebTestBase {
    *   An array of invalid URL entries.
    */
   protected function assertInvalidEntries($field_name, array $invalid_entries) {
-    foreach ($invalid_entries as $invalid_value) {
+    foreach ($invalid_entries as $invalid_value => $error_message) {
       $edit = array(
-        "{$field_name}[0][url]" => $invalid_value,
+        "{$field_name}[0][uri]" => $invalid_value,
       );
       $this->drupalPostForm('entity_test/add', $edit, t('Save'));
-      $this->assertText(t('The URL @url is not valid.', array('@url' => $invalid_value)));
+      $this->assertText(t($error_message, array('@link_path' => $invalid_value)));
     }
   }
 
@@ -227,7 +254,7 @@ class LinkFieldTest extends WebTestBase {
       $this->drupalGet('entity_test/add');
       // Assert label is shown.
       $this->assertText('Read more about this entity');
-      $this->assertFieldByName("{$field_name}[0][url]", '', 'URL field found.');
+      $this->assertFieldByName("{$field_name}[0][uri]", '', 'URL field found.');
       $this->assertRaw('placeholder="http://example.com"');
 
       if ($title_setting === DRUPAL_DISABLED) {
@@ -241,14 +268,14 @@ class LinkFieldTest extends WebTestBase {
         if ($title_setting === DRUPAL_REQUIRED) {
           // Verify that the link text is required, if the URL is non-empty.
           $edit = array(
-            "{$field_name}[0][url]" => 'http://www.example.com',
+            "{$field_name}[0][uri]" => 'http://www.example.com',
           );
           $this->drupalPostForm(NULL, $edit, t('Save'));
           $this->assertText(t('!name field is required.', array('!name' => t('Link text'))));
 
           // Verify that the link text is not required, if the URL is empty.
           $edit = array(
-            "{$field_name}[0][url]" => '',
+            "{$field_name}[0][uri]" => '',
           );
           $this->drupalPostForm(NULL, $edit, t('Save'));
           $this->assertNoText(t('!name field is required.', array('!name' => t('Link text'))));
@@ -256,7 +283,7 @@ class LinkFieldTest extends WebTestBase {
           // Verify that a URL and link text meets requirements.
           $this->drupalGet('entity_test/add');
           $edit = array(
-            "{$field_name}[0][url]" => 'http://www.example.com',
+            "{$field_name}[0][uri]" => 'http://www.example.com',
             "{$field_name}[0][title]" => 'Example',
           );
           $this->drupalPostForm(NULL, $edit, t('Save'));
@@ -268,7 +295,7 @@ class LinkFieldTest extends WebTestBase {
     // Verify that a link without link text is rendered using the URL as text.
     $value = 'http://www.example.com/';
     $edit = array(
-      "{$field_name}[0][url]" => $value,
+      "{$field_name}[0][uri]" => $value,
       "{$field_name}[0][title]" => '',
     );
     $this->drupalPostForm(NULL, $edit, t('Save'));
@@ -340,10 +367,10 @@ class LinkFieldTest extends WebTestBase {
     // Intentionally contains an ampersand that needs sanitization on output.
     $title2 = 'A very long & strange example title that could break the nice layout of the site';
     $edit = array(
-      "{$field_name}[0][url]" => $url1,
+      "{$field_name}[0][uri]" => $url1,
       // Note that $title1 is not submitted.
       "{$field_name}[0][title]" => '',
-      "{$field_name}[1][url]" => $url2,
+      "{$field_name}[1][uri]" => $url2,
       "{$field_name}[1][title]" => $title2,
     );
     // Assert label is shown.
@@ -478,8 +505,8 @@ class LinkFieldTest extends WebTestBase {
     // Intentionally contains an ampersand that needs sanitization on output.
     $title2 = 'A very long & strange example title that could break the nice layout of the site';
     $edit = array(
-      "{$field_name}[0][url]" => $url1,
-      "{$field_name}[1][url]" => $url2,
+      "{$field_name}[0][uri]" => $url1,
+      "{$field_name}[1][uri]" => $url2,
       "{$field_name}[1][title]" => $title2,
     );
     $this->drupalPostForm(NULL, $edit, t('Save'));
@@ -556,7 +583,7 @@ class LinkFieldTest extends WebTestBase {
     $display = entity_get_display($entity->getEntityTypeId(), $entity->bundle(), $view_mode);
     $content = $display->build($entity);
     $output = drupal_render($content);
-    $this->drupalSetContent($output);
+    $this->setRawContent($output);
     $this->verbose($output);
   }
 

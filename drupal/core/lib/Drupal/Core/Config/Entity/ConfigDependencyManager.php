@@ -20,7 +20,7 @@ use Drupal\Component\Utility\SortArray;
  * their fields, and both are created before the view display configuration.
  *
  * The configuration dependency value is structured like this:
- * <code>
+ * @code
  * array(
  *   'config => array(
  *     // An array of configuration entity object names. Recalculated on save.
@@ -45,7 +45,7 @@ use Drupal\Component\Utility\SortArray;
  *     'theme' => array(),
  *   ),
  * );
- * </code>
+ * @endcode
  *
  * Configuration entity dependencies are recalculated on save based on the
  * current values of the configuration. For example, a filter format will depend
@@ -283,6 +283,39 @@ class ConfigDependencyManager {
     });
     $this->data = $data;
     $this->graph = NULL;
+    return $this;
+  }
+
+  /**
+   * Updates one of the lightweight ConfigEntityDependency objects.
+   *
+   * @param $name
+   *   The configuration dependency name.
+   * @param array $dependencies
+   *   The configuration dependencies. The array is structured like this:
+   *   @code
+   *   array(
+   *     'config => array(
+   *       // An array of configuration entity object names.
+   *     ),
+   *     'content => array(
+   *       // An array of content entity configuration dependency names. The default
+   *       // format is "ENTITY_TYPE_ID:BUNDLE:UUID".
+   *     ),
+   *     'module' => array(
+   *       // An array of module names.
+   *     ),
+   *     'theme' => array(
+   *       // An array of theme names.
+   *     ),
+   *   );
+   *   @endcode
+   *
+   * @return $this
+   */
+  public function updateData($name, array $dependencies) {
+    $this->graph = NULL;
+    $this->data[$name] = new ConfigEntityDependency($name, ['dependencies' => $dependencies]);
     return $this;
   }
 

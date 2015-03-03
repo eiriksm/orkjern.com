@@ -59,7 +59,7 @@ class DisplayTest extends PluginTestBase {
 
     $this->assertTrue(isset($displays['display_test_1']), 'Added display has been assigned to "display_test_1"');
 
-    // Check the the display options are like expected.
+    // Check the display options are like expected.
     $options = array(
       'display_options' => array(),
       'display_plugin' => 'display_test',
@@ -176,7 +176,7 @@ class DisplayTest extends PluginTestBase {
     $output = $view->preview();
     $output = drupal_render($output);
 
-    $this->drupalSetContent($output);
+    $this->setRawContent($output);
     $result = $this->xpath('//a[@class=:class]', array(':class' => 'more-link'));
     $this->assertEqual($result[0]->attributes()->href, \Drupal::url('view.test_display_more.page_1'), 'The right more link is shown.');
     $this->assertEqual(trim($result[0][0]), $expected_more_text, 'The right link text is shown.');
@@ -185,7 +185,7 @@ class DisplayTest extends PluginTestBase {
     // tested.
     $more_link = $view->display_handler->renderMoreLink();
     $more_link = drupal_render($more_link);
-    $this->drupalSetContent($more_link);
+    $this->setRawContent($more_link);
     $result = $this->xpath('//a[@class=:class]', array(':class' => 'more-link'));
     $this->assertEqual($result[0]->attributes()->href, \Drupal::url('view.test_display_more.page_1'), 'The right more link is shown.');
     $this->assertEqual(trim($result[0][0]), $expected_more_text, 'The right link text is shown.');
@@ -201,7 +201,7 @@ class DisplayTest extends PluginTestBase {
     $this->executeView($view);
     $output = $view->preview();
     $output = drupal_render($output);
-    $this->drupalSetContent($output);
+    $this->setRawContent($output);
     $result = $this->xpath('//a[@class=:class]', array(':class' => 'more-link'));
     $this->assertTrue(empty($result), 'The more link is not shown.');
 
@@ -219,7 +219,7 @@ class DisplayTest extends PluginTestBase {
     $this->executeView($view);
     $output = $view->preview();
     $output = drupal_render($output);
-    $this->drupalSetContent($output);
+    $this->setRawContent($output);
     $result = $this->xpath('//a[@class=:class]', array(':class' => 'more-link'));
     $this->assertTrue(empty($result), 'The more link is not shown when view has more records.');
 
@@ -237,13 +237,13 @@ class DisplayTest extends PluginTestBase {
 
     // Change the page plugin id to an invalid one. Bypass the entity system
     // so no menu rebuild was executed (so the path is still available).
-    $config = \Drupal::config('views.view.test_display_invalid');
+    $config = $this->config('views.view.test_display_invalid');
     $config->set('display.page_1.display_plugin', 'invalid');
     $config->save();
 
     $this->drupalGet('test_display_invalid');
     $this->assertResponse(200);
-    $this->assertText('The "invalid" plugin does not exist.');
+    $this->assertText('The &quot;invalid&quot; plugin does not exist.');
 
     // Rebuild the router, and ensure that the path is not accessible anymore.
     views_invalidate_cache();
@@ -253,7 +253,7 @@ class DisplayTest extends PluginTestBase {
     $this->assertResponse(404);
 
     // Change the display plugin ID back to the correct ID.
-    $config = \Drupal::config('views.view.test_display_invalid');
+    $config = $this->config('views.view.test_display_invalid');
     $config->set('display.page_1.display_plugin', 'page');
     $config->save();
 
@@ -265,7 +265,7 @@ class DisplayTest extends PluginTestBase {
     $this->assertBlockAppears($block);
 
     // Change the block plugin ID to an invalid one.
-    $config = \Drupal::config('views.view.test_display_invalid');
+    $config = $this->config('views.view.test_display_invalid');
     $config->set('display.block_1.display_plugin', 'invalid');
     $config->save();
 
@@ -273,7 +273,7 @@ class DisplayTest extends PluginTestBase {
     // plugin warning message.
     $this->drupalGet('<front>');
     $this->assertResponse(200);
-    $this->assertText('The "invalid" plugin does not exist.');
+    $this->assertText('The &quot;invalid&quot; plugin does not exist.');
     $this->assertNoBlockAppears($block);
   }
 

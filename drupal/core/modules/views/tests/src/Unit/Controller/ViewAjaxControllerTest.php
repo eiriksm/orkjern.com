@@ -40,13 +40,30 @@ class ViewAjaxControllerTest extends UnitTestCase {
    */
   protected $viewAjaxController;
 
+  /**
+   * The mocked current path.
+   *
+   * @var \Drupal\Core\Path\CurrentPathStack|\PHPUnit_Framework_MockObject_MockObject
+   */
+  protected $currentPath;
+
   protected function setUp() {
     $this->viewStorage = $this->getMock('Drupal\Core\Entity\EntityStorageInterface');
     $this->executableFactory = $this->getMockBuilder('Drupal\views\ViewExecutableFactory')
       ->disableOriginalConstructor()
       ->getMock();
+    $this->renderer = $this->getMock('\Drupal\Core\Render\RendererInterface');
+    $this->renderer->expects($this->any())
+      ->method('render')
+      ->will($this->returnCallback(function(array &$elements) {
+        $elements['#attached'] = [];
+        return isset($elements['#markup']) ? $elements['#markup'] : '';
+      }));
+    $this->currentPath = $this->getMockBuilder('Drupal\Core\Path\CurrentPathStack')
+      ->disableOriginalConstructor()
+      ->getMock();
 
-    $this->viewAjaxController = new TestViewAjaxController($this->viewStorage, $this->executableFactory);
+    $this->viewAjaxController = new ViewAjaxController($this->viewStorage, $this->executableFactory, $this->renderer, $this->currentPath);
   }
 
   /**
@@ -285,18 +302,6 @@ class ViewAjaxControllerTest extends UnitTestCase {
     $commands = $this->getCommands($response);
     $this->assertEquals('insert', $commands[$position]['command']);
     $this->assertEquals('View result', $commands[$position]['data']);
-  }
-
-}
-
-/**
- * Overrides ViewAjaxController::drupalRender to protect the parent method.
- */
-class TestViewAjaxController extends ViewAjaxController {
-
-  // @todo Remove once drupal_render is converted to autoloadable code.
-  protected function drupalRender(array $elements) {
-    return isset($elements['#markup']) ? $elements['#markup'] : '';
   }
 
 }

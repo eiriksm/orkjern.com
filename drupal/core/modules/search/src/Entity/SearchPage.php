@@ -24,22 +24,22 @@ use Drupal\search\SearchPageInterface;
  *   label = @Translation("Search page"),
  *   handlers = {
  *     "access" = "Drupal\search\SearchPageAccessControlHandler",
- *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
  *     "list_builder" = "Drupal\search\SearchPageListBuilder",
  *     "form" = {
  *       "add" = "Drupal\search\Form\SearchPageAddForm",
  *       "edit" = "Drupal\search\Form\SearchPageEditForm",
  *       "search" = "Drupal\search\Form\SearchPageForm",
- *       "delete" = "Drupal\search\Form\SearchPageDeleteForm"
+ *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
  *     }
  *   },
  *   admin_permission = "administer search",
  *   links = {
- *     "edit-form" = "entity.search_page.edit_form",
- *     "delete-form" = "entity.search_page.delete_form",
- *     "enable" = "entity.search_page.enable",
- *     "disable" = "entity.search_page.disable",
- *     "set-default" = "entity.search_page.set_default"
+ *     "edit-form" = "/admin/config/search/pages/manage/{search_page}",
+ *     "delete-form" = "/admin/config/search/pages/manage/{search_page}/delete",
+ *     "enable" = "/admin/config/search/pages/manage/{search_page}/enable",
+ *     "disable" = "/admin/config/search/pages/manage/{search_page}/disable",
+ *     "set-default" = "/admin/config/search/pages/manage/{search_page}/set-default",
+ *     "collection" = "/admin/config/search/pages",
  *   },
  *   config_prefix = "page",
  *   entity_keys = {

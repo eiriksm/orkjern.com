@@ -24,6 +24,8 @@ use Drupal\user\Entity\Role;
  */
 class CommentFieldAccessTest extends EntityUnitTestBase {
 
+  use CommentTestTrait;
+
   /**
    * Modules to install.
    *
@@ -40,7 +42,6 @@ class CommentFieldAccessTest extends EntityUnitTestBase {
     'uid',
     'status',
     'created',
-    'name',
   );
 
   /**
@@ -127,15 +128,14 @@ class CommentFieldAccessTest extends EntityUnitTestBase {
 
     $anonymous_user = new AnonymousUserSession();
 
-    /** @var \Drupal\comment\CommentManagerInterface $manager */
-    $manager = \Drupal::service('comment.manager');
     // Add two fields.
-    $manager->addDefaultField('entity_test', 'entity_test', 'comment');
-    $manager->addDefaultField('entity_test', 'entity_test', 'comment_other');
+    $this->addDefaultCommentField('entity_test', 'entity_test', 'comment');
+    $this->addDefaultCommentField('entity_test', 'entity_test', 'comment_other');
 
     // Change the second field's anonymous contact setting.
     $instance = FieldConfig::loadByName('entity_test', 'entity_test', 'comment_other');
-    $instance->settings['anonymous'] = COMMENT_ANONYMOUS_MAYNOT_CONTACT;
+    // Default is 'May not contact', for this field - they may contact.
+    $instance->settings['anonymous'] = COMMENT_ANONYMOUS_MAY_CONTACT;
     $instance->save();
 
     // Create three "Comments". One is owned by our edit-enabled user.
@@ -263,7 +263,7 @@ class CommentFieldAccessTest extends EntityUnitTestBase {
             $set['user']->isAnonymous() &&
             $set['comment']->isNew() &&
             $set['user']->hasPermission('post comments') &&
-            $set['comment']->getFieldName() != 'comment_other'
+            $set['comment']->getFieldName() == 'comment_other'
           ), String::format('User @user !state update field !field on comment @comment', [
           '@user' => $set['user']->getUsername(),
           '!state' => $may_update ? 'can' : 'cannot',

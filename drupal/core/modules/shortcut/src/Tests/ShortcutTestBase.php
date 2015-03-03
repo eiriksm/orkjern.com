@@ -62,24 +62,28 @@ abstract class ShortcutTestBase extends WebTestBase {
 
       // Populate the default shortcut set.
       $shortcut = Shortcut::create(array(
-        'set' => 'default',
+        'shortcut_set' => 'default',
         'title' => t('Add content'),
         'weight' => -20,
-        'path' => 'node/add',
+        'link' => array(
+          'uri' => 'internal:/node/add',
+        ),
       ));
       $shortcut->save();
 
       $shortcut = Shortcut::create(array(
-        'set' => 'default',
+        'shortcut_set' => 'default',
         'title' => t('All content'),
         'weight' => -19,
-        'path' => 'admin/content',
+        'link' => array(
+          'uri' => 'internal:/admin/content',
+        ),
       ));
       $shortcut->save();
     }
 
     // Create users.
-    $this->adminUser = $this->drupalCreateUser(array('access toolbar', 'administer shortcuts', 'view the administration theme', 'create article content', 'create page content', 'access content overview', 'administer users', 'link to any page'));
+    $this->adminUser = $this->drupalCreateUser(array('access toolbar', 'administer shortcuts', 'view the administration theme', 'create article content', 'create page content', 'access content overview', 'administer users', 'link to any page', 'edit any article content'));
     $this->shortcutUser = $this->drupalCreateUser(array('customize shortcut links', 'switch shortcut sets', 'access shortcuts', 'access content'));
 
     // Create a node.
@@ -88,7 +92,7 @@ abstract class ShortcutTestBase extends WebTestBase {
     // Log in as admin and grab the default shortcut set.
     $this->drupalLogin($this->adminUser);
     $this->set = ShortcutSet::load('default');
-    shortcut_set_assign_user($this->set, $this->adminUser);
+    \Drupal::entityManager()->getStorage('shortcut_set')->assignUser($this->set, $this->adminUser);
   }
 
   /**
@@ -111,7 +115,7 @@ abstract class ShortcutTestBase extends WebTestBase {
    * @param string $key
    *   The array key indicating what information to extract from each link:
    *    - 'title': Extract shortcut titles.
-   *    - 'path': Extract shortcut paths.
+   *    - 'link': Extract shortcut paths.
    *    - 'id': Extract the shortcut ID.
    *
    * @return array
@@ -121,7 +125,12 @@ abstract class ShortcutTestBase extends WebTestBase {
     $info = array();
     \Drupal::entityManager()->getStorage('shortcut')->resetCache();
     foreach ($set->getShortcuts() as $shortcut) {
-      $info[] = $shortcut->{$key}->value;
+      if ($key == 'link') {
+        $info[] = $shortcut->link->uri;
+      }
+      else {
+        $info[] = $shortcut->{$key}->value;
+      }
     }
     return $info;
   }

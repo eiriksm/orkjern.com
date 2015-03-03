@@ -19,6 +19,9 @@ use Drupal\views\ResultRow;
  */
 class LanguageField extends FieldPluginBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected function defineOptions() {
     $options = parent::defineOptions();
     $options['native_language'] = array('default' => FALSE);
@@ -26,6 +29,9 @@ class LanguageField extends FieldPluginBase {
     return $options;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
     $form['native_language'] = array(
@@ -43,7 +49,7 @@ class LanguageField extends FieldPluginBase {
     // @todo: Drupal Core dropped native language until config translation is
     // ready, see http://drupal.org/node/1616594.
     $value = $this->getValue($values);
-    $language = language_load($value);
+    $language = \Drupal::languageManager()->getLanguage($value);
     return $language ? $language->getName() : '';
   }
 

@@ -28,7 +28,7 @@ class EntityReferenceAdminTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('node', 'field_ui', 'entity_reference', 'path', 'taxonomy');
+  public static $modules = array('node', 'field_ui', 'entity_reference', 'path', 'taxonomy', 'block');
 
 
   /**
@@ -38,8 +38,12 @@ class EntityReferenceAdminTest extends WebTestBase {
    */
   protected $type;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
+    $this->drupalPlaceBlock('system_breadcrumb_block');
 
     // Create test user.
     $admin_user = $this->drupalCreateUser(array('access content', 'administer node fields', 'administer node display'));
@@ -48,7 +52,7 @@ class EntityReferenceAdminTest extends WebTestBase {
     // Create a content type, with underscores.
     $type_name = strtolower($this->randomMachineName(8)) . '_test';
     $type = $this->drupalCreateContentType(array('name' => $type_name, 'type' => $type_name));
-    $this->type = $type->type;
+    $this->type = $type->id();
   }
 
   /**
@@ -118,6 +122,26 @@ class EntityReferenceAdminTest extends WebTestBase {
     // The first 'Edit' link is for the Body field.
     $this->clickLink(t('Edit'), 1);
     $this->drupalPostForm(NULL, array(), t('Save settings'));
+
+    // Switch the target type to 'taxonomy_term' and check that the settings
+    // specific to its selection handler are displayed.
+    $field_name = 'node.' . $this->type . '.field_test';
+    $edit = array(
+      'field_storage[settings][target_type]' => 'taxonomy_term',
+    );
+    $this->drupalPostForm($bundle_path . '/fields/' . $field_name . '/storage', $edit, t('Save field settings'));
+    $this->drupalGet($bundle_path . '/fields/' . $field_name);
+    $this->assertFieldByName('field[settings][handler_settings][auto_create]');
+
+    // Switch the target type to 'user' and check that the settings specific to
+    // its selection handler are displayed.
+    $field_name = 'node.' . $this->type . '.field_test';
+    $edit = array(
+      'field_storage[settings][target_type]' => 'user',
+    );
+    $this->drupalPostForm($bundle_path . '/fields/' . $field_name . '/storage', $edit, t('Save field settings'));
+    $this->drupalGet($bundle_path . '/fields/' . $field_name);
+    $this->assertFieldByName('field[settings][handler_settings][filter][type]', '_none');
   }
 
 

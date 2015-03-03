@@ -12,6 +12,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Utility\String;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Config\Entity\ConfigEntityType;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Entity\Exception\AmbiguousEntityClassException;
 use Drupal\Core\Entity\Exception\NoCorrespondingEntityClassException;
@@ -294,10 +295,25 @@ class EntityManager extends DefaultPluginManager implements EntityManagerInterfa
       $form_object
         ->setStringTranslation($this->translationManager)
         ->setModuleHandler($this->moduleHandler)
+        ->setEntityManager($this)
         ->setOperation($operation);
       $this->handlers['form'][$operation][$entity_type] = $form_object;
     }
     return $this->handlers['form'][$operation][$entity_type];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRouteProviders($entity_type) {
+    if (!isset($this->handlers['route_provider'][$entity_type])) {
+      $route_provider_classes = $this->getDefinition($entity_type, TRUE)->getRouteProviderClasses();
+
+      foreach ($route_provider_classes as $type => $class) {
+        $this->handlers['route_provider'][$entity_type][$type] = $this->createHandlerInstance($class, $this->getDefinition($entity_type));
+      }
+    }
+    return isset($this->handlers['route_provider'][$entity_type]) ? $this->handlers['route_provider'][$entity_type] : [];
   }
 
   /**
@@ -434,7 +450,7 @@ class EntityManager extends DefaultPluginManager implements EntityManagerInterfa
 
     // Ensure defined entity keys are there and have proper revisionable and
     // translatable values.
-    $keys = array_filter($entity_type->getKeys() + array('langcode' => 'langcode'));
+    $keys = array_filter($entity_type->getKeys());
     foreach ($keys as $key => $field_name) {
       if (isset($base_field_definitions[$field_name]) && in_array($key, array('id', 'revision', 'uuid', 'bundle')) && $base_field_definitions[$field_name]->isRevisionable()) {
         throw new \LogicException(String::format('The @field field cannot be revisionable as it is used as @key entity key.', array('@field' => $base_field_definitions[$field_name]->getLabel(), '@key' => $key)));
@@ -671,7 +687,7 @@ class EntityManager extends DefaultPluginManager implements EntityManagerInterfa
     $this->fieldMapByFieldType = array();
     $this->displayModeInfo = array();
     $this->extraFields = array();
-    Cache::deleteTags(array('entity_field_info'));
+    Cache::invalidateTags(array('entity_field_info'));
     // The typed data manager statically caches prototype objects with injected
     // definitions, clear those as well.
     $this->typedDataManager->clearCachedDefinitions();
@@ -682,7 +698,7 @@ class EntityManager extends DefaultPluginManager implements EntityManagerInterfa
    */
   public function clearCachedBundles() {
     $this->bundleInfo = array();
-    Cache::deleteTags(array('entity_bundles'));
+    Cache::invalidateTags(array('entity_bundles'));
     // Entity bundles are exposed as data types, clear that cache too.
     $this->typedDataManager->clearCachedDefinitions();
   }
@@ -961,6 +977,28 @@ class EntityManager extends DefaultPluginManager implements EntityManagerInterfa
     $entities = $this->getStorage($entity_type_id)->loadByProperties(array($uuid_key => $uuid));
 
     return reset($entities);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadEntityByConfigTarget($entity_type_id, $target) {
+    $entity_type = $this->getDefinition($entity_type_id);
+
+    // For configuration entities, the config target is given by the entity ID.
+    // @todo Consider adding a method to allow entity types to indicate the
+    //   target identifier key rather than hard-coding this check. Issue:
+    //   https://www.drupal.org/node/2412983.
+    if ($entity_type instanceof ConfigEntityType) {
+      $entity = $this->getStorage($entity_type_id)->load($target);
+    }
+
+    // For content entities, the config target is given by the UUID.
+    else {
+      $entity = $this->loadEntityByUuid($entity_type_id, $target);
+    }
+
+    return $entity;
   }
 
   /**

@@ -128,13 +128,30 @@ class CommentController extends ControllerBase {
       // Find the current display page for this comment.
       $page = $this->entityManager()->getStorage('comment')->getDisplayOrdinal($comment, $field_definition->getSetting('default_mode'), $field_definition->getSetting('per_page'));
       // @todo: Cleaner sub request handling.
-      $redirect_request = Request::create($entity->getSystemPath(), 'GET', $request->query->all(), $request->cookies->all(), array(), $request->server->all());
+      $redirect_request = Request::create($entity->url(), 'GET', $request->query->all(), $request->cookies->all(), array(), $request->server->all());
       $redirect_request->query->set('page', $page);
+      // Carry over the session to the subrequest.
+      if ($session = $request->getSession()) {
+        $redirect_request->setSession($session);
+      }
       // @todo: Convert the pager to use the request object.
       $request->query->set('page', $page);
       return $this->httpKernel->handle($redirect_request, HttpKernelInterface::SUB_REQUEST);
     }
     throw new NotFoundHttpException();
+  }
+
+  /**
+   * The _title_callback for the page that renders the comment permalink.
+   *
+   * @param \Drupal\comment\CommentInterface $comment
+   *   The current comment.
+   *
+   * @return string
+   *   The translated comment subject.
+   */
+  public function commentPermalinkTitle(CommentInterface $comment) {
+    return $this->entityManager()->getTranslationFromContext($comment)->label();
   }
 
   /**

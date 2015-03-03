@@ -7,7 +7,9 @@
 
 namespace Drupal\content_translation;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\language\Entity\ContentLanguageSettings;
 
 /**
@@ -23,13 +25,40 @@ class ContentTranslationManager implements ContentTranslationManagerInterface {
   protected $entityManager;
 
   /**
+   * The updates manager.
+   *
+   * @var \Drupal\content_translation\ContentTranslationUpdatesManager
+   */
+  protected $updatesManager;
+
+  /**
    * Constructs a ContentTranslationManageAccessCheck object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $manager
    *   The entity type manager.
+   * @param \Drupal\content_translation\ContentTranslationUpdatesManager $updates_manager
+   *   The updates manager.
    */
-  public function __construct(EntityManagerInterface $manager) {
+  public function __construct(EntityManagerInterface $manager, ContentTranslationUpdatesManager $updates_manager) {
     $this->entityManager = $manager;
+    $this->updatesManager = $updates_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function getTranslationHandler($entity_type_id) {
+    return $this->entityManager->getHandler($entity_type_id, 'translation');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTranslationMetadata(EntityInterface $translation) {
+    // We need a new instance of the metadata handler wrapping each translation.
+    $entity_type = $translation->getEntityType();
+    $class = $entity_type->get('content_translation_metadata');
+    return new $class($translation, $this->getTranslationHandler($entity_type->id()));
   }
 
   /**
@@ -59,6 +88,8 @@ class ContentTranslationManager implements ContentTranslationManagerInterface {
   public function setEnabled($entity_type_id, $bundle, $value) {
     $config = $this->loadContentLanguageSettings($entity_type_id, $bundle);
     $config->setThirdPartySetting('content_translation', 'enabled', $value)->save();
+    $entity_type = $this->entityManager->getDefinition($entity_type_id);
+    $this->updatesManager->updateDefinitions(array($entity_type_id => $entity_type));
   }
 
   /**

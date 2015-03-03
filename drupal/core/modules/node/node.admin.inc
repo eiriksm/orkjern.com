@@ -95,6 +95,8 @@ function _node_mass_update_helper(NodeInterface $node, array $updates, $langcode
 }
 
 /**
+ * Implements callback_batch_operation().
+ *
  * Executes a batch operation for node_mass_update().
  *
  * @param array $nodes
@@ -143,6 +145,8 @@ function _node_mass_update_batch_process(array $nodes, array $updates, $load, $r
 }
 
 /**
+ * Implements callback_batch_finished().
+ *
  * Reports the 'finished' status of batch operation for node_mass_update().
  *
  * @param bool $success
@@ -159,7 +163,7 @@ function _node_mass_update_batch_finished($success, $results, $operations) {
   }
   else {
     drupal_set_message(t('An error occurred and processing did not complete.'), 'error');
-    $message = format_plural(count($results), '1 item successfully processed:', '@count items successfully processed:');
+    $message = \Drupal::translation()->formatPlural(count($results), '1 item successfully processed:', '@count items successfully processed:');
     $item_list = array(
       '#theme' => 'item_list',
       '#items' => $results,

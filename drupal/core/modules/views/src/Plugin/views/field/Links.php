@@ -26,7 +26,7 @@ abstract class Links extends FieldPluginBase {
   }
 
   /**
-   * Overrides \Drupal\views\Plugin\views\field\FieldPluginBase::defineOptions().
+   * {@inheritdoc}
    */
   public function defineOptions() {
     $options = parent::defineOptions();
@@ -38,7 +38,7 @@ abstract class Links extends FieldPluginBase {
   }
 
   /**
-   * Overrides \Drupal\views\Plugin\views\field\FieldPluginBase::defineOptions().
+   * {@inheritdoc}
    */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
@@ -82,10 +82,10 @@ abstract class Links extends FieldPluginBase {
       }
       // Make sure that tokens are replaced for this paths as well.
       $tokens = $this->getRenderTokens(array());
-      $path = strip_tags(String::decodeEntities(strtr($path, $tokens)));
+      $path = strip_tags(String::decodeEntities($this->viewsTokenReplace($path, $tokens)));
 
       $links[$field] = array(
-        'url' => $path ? UrlObject::fromUri('base://' . $path) : $url,
+        'url' => $path ? UrlObject::fromUri('internal:/' . $path) : $url,
         'title' => $title,
       );
       if (!empty($this->options['destination'])) {
@@ -97,7 +97,7 @@ abstract class Links extends FieldPluginBase {
   }
 
   /**
-   * Overrides \Drupal\views\Plugin\views\field\FieldPluginBase::query().
+   * {@inheritdoc}
    */
   public function query() {
   }

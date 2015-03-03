@@ -7,14 +7,13 @@ global-styling:
       css/base/print.css: {}
     component:
       css/components/admin-list.css: {}
-      css/components/admin-options.css: {}
       css/components/admin-panel.css: {}
       css/components/block-recent-content.css: {}
       css/components/content-header.css: {}
       css/components/breadcrumb.css: {}
       css/components/buttons.css: {}
       css/components/buttons.theme.css: {}
-      css/components/comments.css: {}
+      css/components/colors.css: {}
       css/components/messages.css: {}
       css/components/dropbutton.component.css: {}
       css/components/entity-meta.css: {}
@@ -34,8 +33,6 @@ global-styling:
       css/components/views-ui.css: {}
     layout:
       css/layout/layout.css: {}
-    theme:
-      css/theme/appearance-page.css: {}
 
 node-form:
   version: VERSION

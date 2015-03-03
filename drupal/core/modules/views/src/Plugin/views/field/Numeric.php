@@ -23,6 +23,9 @@ use Drupal\views\ResultRow;
  */
 class Numeric extends FieldPluginBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected function defineOptions() {
     $options = parent::defineOptions();
 
@@ -39,6 +42,9 @@ class Numeric extends FieldPluginBase {
     return $options;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     if (!empty($this->definition['float'])) {
       $form['set_precision'] = array(
@@ -150,7 +156,7 @@ class Numeric extends FieldPluginBase {
 
     // Should we format as a plural.
     if (!empty($this->options['format_plural'])) {
-      $value = format_plural($value, $this->options['format_plural_singular'], $this->options['format_plural_plural']);
+      $value = $this->formatPlural($value, $this->options['format_plural_singular'], $this->options['format_plural_plural']);
     }
 
     return $this->sanitizeValue($this->options['prefix'], 'xss')

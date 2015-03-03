@@ -19,6 +19,8 @@ use Drupal\simpletest\WebTestBase;
  */
 class CommentLanguageTest extends WebTestBase {
 
+  use CommentTestTrait;
+
   /**
    * Modules to install.
    *
@@ -67,11 +69,11 @@ class CommentLanguageTest extends WebTestBase {
     $this->drupalPostForm("user/" . $admin_user->id() . "/edit", $edit, t('Save'));
 
     // Create comment field on article.
-    $this->container->get('comment.manager')->addDefaultField('node', 'article');
+    $this->addDefaultCommentField('node', 'article');
 
     // Make comment body translatable.
     $field_storage = FieldStorageConfig::loadByName('comment', 'comment_body');
-    $field_storage->translatable = TRUE;
+    $field_storage->setTranslatable(TRUE);
     $field_storage->save();
     $this->assertTrue($field_storage->isTranslatable(), 'Comment body is translatable.');
   }
@@ -93,7 +95,7 @@ class CommentLanguageTest extends WebTestBase {
       $edit = array(
         'title[0][value]' => $title,
         'body[0][value]' => $this->randomMachineName(),
-        'langcode' => $node_langcode,
+        'langcode[0][value]' => $node_langcode,
         'comment[0][status]' => CommentItemInterface::OPEN,
       );
       $this->drupalPostForm("node/add/article", $edit, t('Save'));

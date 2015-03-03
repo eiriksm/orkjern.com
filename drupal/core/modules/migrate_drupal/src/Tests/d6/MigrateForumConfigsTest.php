@@ -9,14 +9,14 @@ namespace Drupal\migrate_drupal\Tests\d6;
 
 use Drupal\config\Tests\SchemaCheckTestTrait;
 use Drupal\migrate\MigrateExecutable;
-use Drupal\migrate_drupal\Tests\MigrateDrupalTestBase;
+use Drupal\migrate_drupal\Tests\d6\MigrateDrupal6TestBase;
 
 /**
  * Upgrade variables to forum.settings.yml.
  *
  * @group migrate_drupal
  */
-class MigrateForumConfigsTest extends MigrateDrupalTestBase {
+class MigrateForumConfigsTest extends MigrateDrupal6TestBase {
 
   use SchemaCheckTestTrait;
 
@@ -39,7 +39,7 @@ class MigrateForumConfigsTest extends MigrateDrupalTestBase {
     ));
     $migration = entity_load('migration', 'd6_forum_settings');
     $dumps = array(
-      $this->getDumpDirectory() . '/Drupal6ForumSettings.php',
+      $this->getDumpDirectory() . '/Variable.php',
     );
     $this->prepare($migration, $dumps);
     $executable = new MigrateExecutable($migration, $this);
@@ -50,7 +50,7 @@ class MigrateForumConfigsTest extends MigrateDrupalTestBase {
    * Tests migration of forum variables to forum.settings.yml.
    */
   public function testForumSettings() {
-    $config = \Drupal::config('forum.settings');
+    $config = $this->config('forum.settings');
     $this->assertIdentical($config->get('topics.hot_threshold'), 15);
     $this->assertIdentical($config->get('topics.page_limit'), 25);
     $this->assertIdentical($config->get('topics.order'), 1);

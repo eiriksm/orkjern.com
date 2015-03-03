@@ -8,6 +8,7 @@
 namespace Drupal\tracker\Tests;
 
 use Drupal\comment\CommentInterface;
+use Drupal\comment\Tests\CommentTestTrait;
 use Drupal\simpletest\WebTestBase;
 
 /**
@@ -16,6 +17,8 @@ use Drupal\simpletest\WebTestBase;
  * @group tracker
  */
 class TrackerTest extends WebTestBase {
+
+  use CommentTestTrait;
 
   /**
    * Modules to enable.
@@ -27,16 +30,16 @@ class TrackerTest extends WebTestBase {
   /**
    * The main user for testing.
    *
-   * @var object
+   * @var \Drupal\user\UserInterface
    */
   protected $user;
 
   /**
    * A second user that will 'create' comments and nodes.
    *
-   * @var object
+   * @var \Drupal\user\UserInterface
    */
-  protected $other_user;
+  protected $otherUser;
 
   protected function setUp() {
     parent::setUp();
@@ -45,8 +48,8 @@ class TrackerTest extends WebTestBase {
 
     $permissions = array('access comments', 'create page content', 'post comments', 'skip comment approval');
     $this->user = $this->drupalCreateUser($permissions);
-    $this->other_user = $this->drupalCreateUser($permissions);
-    $this->container->get('comment.manager')->addDefaultField('node', 'page');
+    $this->otherUser = $this->drupalCreateUser($permissions);
+    $this->addDefaultCommentField('node', 'page');
   }
 
   /**
@@ -93,12 +96,12 @@ class TrackerTest extends WebTestBase {
     ));
     $other_published_no_comment = $this->drupalCreateNode(array(
       'title' => $this->randomMachineName(8),
-      'uid' => $this->other_user->id(),
+      'uid' => $this->otherUser->id(),
       'status' => 1,
     ));
     $other_published_my_comment = $this->drupalCreateNode(array(
       'title' => $this->randomMachineName(8),
-      'uid' => $this->other_user->id(),
+      'uid' => $this->otherUser->id(),
       'status' => 1,
     ));
     $comment = array(
@@ -116,7 +119,7 @@ class TrackerTest extends WebTestBase {
     $this->assertNoLink($unpublished->label());
     // Verify that title and tab title have been set correctly.
     $this->assertText('Activity', 'The user activity tab has the name "Activity".');
-    $this->assertTitle(t('@name | @site', array('@name' => $this->user->getUsername(), '@site' => \Drupal::config('system.site')->get('name'))), 'The user tracker page has the correct page title.');
+    $this->assertTitle(t('@name | @site', array('@name' => $this->user->getUsername(), '@site' => $this->config('system.site')->get('name'))), 'The user tracker page has the correct page title.');
 
     // Verify that unpublished comments are removed from the tracker.
     $admin_user = $this->drupalCreateUser(array('post comments', 'administer comments', 'access user profiles'));
@@ -153,7 +156,7 @@ class TrackerTest extends WebTestBase {
     $this->drupalGet('activity');
     $this->assertNoPattern('/' . $title . '.*new/', 'Visited nodes are not flagged as new.');
 
-    $this->drupalLogin($this->other_user);
+    $this->drupalLogin($this->otherUser);
     $this->drupalGet('activity');
     $this->assertPattern('/' . $title . '.*new/', 'For another user, new nodes are flagged as such in the tracker listing.');
 
@@ -196,12 +199,12 @@ class TrackerTest extends WebTestBase {
       ),
     ));
 
-    $this->drupalLogin($this->other_user);
+    $this->drupalLogin($this->otherUser);
     $this->drupalGet('activity');
     $this->assertText('1 new', 'New comments are counted on the tracker listing pages.');
     $this->drupalGet('node/' . $node->id());
 
-    // Add another comment as other_user.
+    // Add another comment as otherUser.
     $comment = array(
       'subject[0][value]' => $this->randomMachineName(),
       'comment_body[0][value]' => $this->randomMachineName(20),
@@ -231,8 +234,8 @@ class TrackerTest extends WebTestBase {
       'title' => $this->randomMachineName(8),
     ));
 
-    // Now get other_user to track these pieces of content.
-    $this->drupalLogin($this->other_user);
+    // Now get otherUser to track these pieces of content.
+    $this->drupalLogin($this->otherUser);
 
     // Add a comment to the first page.
     $comment = array(
@@ -252,7 +255,7 @@ class TrackerTest extends WebTestBase {
     );
     $this->drupalPostForm('comment/reply/node/' . $node_two->id() . '/comment', $comment, t('Save'));
 
-    // We should at this point have in our tracker for other_user:
+    // We should at this point have in our tracker for otherUser:
     // 1. node_two
     // 2. node_one
     // Because that's the reverse order of the posted comments.
@@ -272,9 +275,9 @@ class TrackerTest extends WebTestBase {
     );
     $this->drupalPostForm('comment/reply/node/' . $node_one->id() . '/comment', $comment, t('Save'));
 
-    // Switch back to the other_user and assert that the order has swapped.
-    $this->drupalLogin($this->other_user);
-    $this->drupalGet('user/' . $this->other_user->id() . '/activity');
+    // Switch back to the otherUser and assert that the order has swapped.
+    $this->drupalLogin($this->otherUser);
+    $this->drupalGet('user/' . $this->otherUser->id() . '/activity');
     // This is a cheeky way of asserting that the nodes are in the right order
     // on the tracker page.
     // It's almost certainly too brittle.
@@ -300,7 +303,7 @@ class TrackerTest extends WebTestBase {
     }
 
     // Add a comment to the last node as other user.
-    $this->drupalLogin($this->other_user);
+    $this->drupalLogin($this->otherUser);
     $comment = array(
       'subject[0][value]' => $this->randomMachineName(),
       'comment_body[0][value]' => $this->randomMachineName(20),

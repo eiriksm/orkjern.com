@@ -35,6 +35,7 @@ use Drupal\Core\Url;
  *   entity_keys = {
  *     "id" = "iid",
  *     "label" = "title",
+ *     "langcode" = "langcode",
  *   }
  * )
  */
@@ -146,7 +147,7 @@ class Item extends ContentEntityBase implements ItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function  getLink() {
+  public function getLink() {
     return $this->get('link')->value;
   }
 

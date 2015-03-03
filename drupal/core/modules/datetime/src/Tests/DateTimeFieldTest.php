@@ -95,7 +95,7 @@ class DateTimeFieldTest extends WebTestBase {
    * Tests date field functionality.
    */
   function testDateField() {
-    $field_name = $this->fieldStorage->field_name;
+    $field_name = $this->fieldStorage->getName();
 
     // Display creation form.
     $this->drupalGet('entity_test/add');
@@ -163,7 +163,7 @@ class DateTimeFieldTest extends WebTestBase {
   function testDatetimeField() {
     $field_name = $this->fieldStorage->getName();
     // Change the field to a datetime field.
-    $this->fieldStorage->settings['datetime_type'] = 'datetime';
+    $this->fieldStorage->setSetting('datetime_type', 'datetime');
     $this->fieldStorage->save();
 
     // Display creation form.
@@ -229,7 +229,7 @@ class DateTimeFieldTest extends WebTestBase {
   function testDatelistWidget() {
     $field_name = $this->fieldStorage->getName();
     // Change the field to a datetime field.
-    $this->fieldStorage->settings['datetime_type'] = 'datetime';
+    $this->fieldStorage->setSetting('datetime_type', 'datetime');
     $this->fieldStorage->save();
 
     // Change the widget to a datelist widget.
@@ -320,7 +320,7 @@ class DateTimeFieldTest extends WebTestBase {
     $this->assertFieldByName('default_value_input[default_date]', '', 'The relative default value is empty in instance settings page');
 
     // Check if default_date has been stored successfully.
-    $config_entity = $this->container->get('config.factory')->get('field.field.node.date_content.' . $field_name)->get();
+    $config_entity = $this->config('field.field.node.date_content.' . $field_name)->get();
     $this->assertEqual($config_entity['default_value'][0], array('default_date_type' => 'now', 'default_date' => 'now'), 'Default value has been stored successfully');
 
     // Clear field cache in order to avoid stale cache values.
@@ -353,7 +353,7 @@ class DateTimeFieldTest extends WebTestBase {
     $this->assertFieldByName('default_value_input[default_date]', '+90 days', 'The relative default value is displayed in instance settings page');
 
     // Check if default_date has been stored successfully.
-    $config_entity = $this->container->get('config.factory')->get('field.field.node.date_content.' . $field_name)->get();
+    $config_entity = $this->config('field.field.node.date_content.' . $field_name)->get();
     $this->assertEqual($config_entity['default_value'][0], array('default_date_type' => 'relative', 'default_date' => '+90 days'), 'Default value has been stored successfully');
 
     // Clear field cache in order to avoid stale cache values.
@@ -376,7 +376,7 @@ class DateTimeFieldTest extends WebTestBase {
     $this->assertFieldByName('default_value_input[default_date]', '', 'The relative default value is empty in instance settings page');
 
     // Check if default_date has been stored successfully.
-    $config_entity = $this->container->get('config.factory')->get('field.field.node.date_content.' . $field_name)->get();
+    $config_entity = $this->config('field.field.node.date_content.' . $field_name)->get();
     $this->assertTrue(empty($config_entity['default_value']), 'Empty default value has been stored successfully');
 
     // Clear field cache in order to avoid stale cache values.
@@ -384,7 +384,7 @@ class DateTimeFieldTest extends WebTestBase {
 
     // Create a new node to check that datetime field default value is not set.
     $new_node = entity_create('node', array('type' => 'date_content'));
-    $this->assertNull($new_node->get($field_name)->offsetGet(0)->value, 'Default value is not set');
+    $this->assertNull($new_node->get($field_name)->value, 'Default value is not set');
   }
 
   /**
@@ -393,7 +393,7 @@ class DateTimeFieldTest extends WebTestBase {
   function testInvalidField() {
 
     // Change the field to a datetime field.
-    $this->fieldStorage->settings['datetime_type'] = 'datetime';
+    $this->fieldStorage->setSetting('datetime_type', 'datetime');
     $this->fieldStorage->save();
     $field_name = $this->fieldStorage->getName();
 
@@ -491,7 +491,7 @@ class DateTimeFieldTest extends WebTestBase {
     $display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode);
     $build = $display->build($entity);
     $output = drupal_render($build);
-    $this->drupalSetContent($output);
+    $this->setRawContent($output);
     $this->verbose($output);
   }
 

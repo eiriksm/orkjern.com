@@ -69,7 +69,6 @@ class DbUpdateController extends ControllerBase {
   protected $entityDefinitionUpdateManager;
 
   /**
-<<<<<<< ours
    * The bare HTML page renderer.
    *
    * @var \Drupal\Core\Render\BareHtmlPageRendererInterface
@@ -602,7 +601,7 @@ class DbUpdateController extends ControllerBase {
     );
     batch_set($batch);
 
-    return batch_process('update.php/results', 'update.php/batch');
+    return batch_process('update.php/results', Url::fromRoute('system.db_update'));
   }
 
   /**

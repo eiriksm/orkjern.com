@@ -21,7 +21,7 @@ class CommentPagerTest extends CommentTestBase {
    * Confirms comment paging works correctly with flat and threaded comments.
    */
   function testCommentPaging() {
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
 
     // Set comment variables.
     $this->setCommentForm(TRUE);
@@ -86,6 +86,12 @@ class CommentPagerTest extends CommentTestBase {
     $this->drupalGet('node/' . $node->id(), array('query' => array('page' => 0)));
     $this->assertFalse($this->commentExists($reply2, TRUE), 'In threaded mode where # replies > # comments per page, the newest reply does not appear on page 1.');
 
+    // Test that the page build process does not somehow generate errors when
+    // # comments per page is set to 0.
+    $this->setCommentsPerPage(0);
+    $this->drupalGet('node/' . $node->id(), array('query' => array('page' => 0)));
+    $this->assertFalse($this->commentExists($reply2, TRUE), 'Threaded mode works correctly when comments per page is 0.');
+
     $this->drupalLogout();
   }
 
@@ -93,7 +99,7 @@ class CommentPagerTest extends CommentTestBase {
    * Tests comment ordering and threading.
    */
   function testCommentOrderingThreading() {
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
 
     // Set comment variables.
     $this->setCommentForm(TRUE);
@@ -192,7 +198,7 @@ class CommentPagerTest extends CommentTestBase {
    * Tests calculation of first page with new comment.
    */
   function testCommentNewPageIndicator() {
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
 
     // Set comment variables.
     $this->setCommentForm(TRUE);
@@ -273,7 +279,7 @@ class CommentPagerTest extends CommentTestBase {
    */
   function testTwoPagers() {
     // Add another field to article content-type.
-    $this->container->get('comment.manager')->addDefaultField('node', 'article', 'comment_2');
+    $this->addDefaultCommentField('node', 'article', 'comment_2');
     // Set default to display comment list with unique pager id.
     entity_get_display('node', 'article', 'default')
       ->setComponent('comment_2', array(
@@ -301,10 +307,10 @@ class CommentPagerTest extends CommentTestBase {
     $this->drupalPostForm(NULL, array('fields[comment][settings_edit_form][settings][pager_id]' => 0), t('Save'));
     $this->assertNoText(t('Pager ID: @id', array('@id' => 0)), 'No summary for standard pager');
 
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
 
     // Add a new node with both comment fields open.
-    $node = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1, 'uid' => $this->web_user->id()));
+    $node = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1, 'uid' => $this->webUser->id()));
     // Set comment options.
     $comments = array();
     foreach (array('comment', 'comment_2') as $field_name) {

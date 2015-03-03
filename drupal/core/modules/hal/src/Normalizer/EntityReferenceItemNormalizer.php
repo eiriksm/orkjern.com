@@ -103,7 +103,8 @@ class EntityReferenceItemNormalizer extends FieldItemNormalizer implements UuidR
     $field_item = $context['target_instance'];
     $field_definition = $field_item->getFieldDefinition();
     $target_type = $field_definition->getSetting('target_type');
-    if ($id = $this->entityResolver->resolve($this, $data, $target_type)) {
+    $id = $this->entityResolver->resolve($this, $data, $target_type);
+    if (isset($id)) {
       return array('target_id' => $id);
     }
     return NULL;
@@ -115,8 +116,9 @@ class EntityReferenceItemNormalizer extends FieldItemNormalizer implements UuidR
   public function getUuid($data) {
     if (isset($data['uuid'])) {
       $uuid = $data['uuid'];
-      if (is_array($uuid)) {
-        $uuid = reset($uuid);
+      // The value may be a nested array like $uuid[0]['value'].
+      if (is_array($uuid) && isset($uuid[0]['value'])) {
+        $uuid = $uuid[0]['value'];
       }
       return $uuid;
     }

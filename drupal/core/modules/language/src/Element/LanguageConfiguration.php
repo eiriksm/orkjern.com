@@ -47,7 +47,7 @@ class LanguageConfiguration extends FormElement {
       '#type' => 'select',
       '#title' => t('Default language'),
       '#options' => $options + static::getDefaultOptions(),
-      '#description' => t('Explanation of the language options is found on the <a href="@languages_list_page">languages list page</a>.', array('@languages_list_page' => \Drupal::url('language.admin_overview'))),
+      '#description' => t('Explanation of the language options is found on the <a href="@languages_list_page">languages list page</a>.', array('@languages_list_page' => \Drupal::url('entity.configurable_language.collection'))),
       '#default_value' => ($default_config != NULL) ? $default_config->getDefaultLangcode() : LanguageInterface::LANGCODE_SITE_DEFAULT,
     );
 
@@ -77,8 +77,9 @@ class LanguageConfiguration extends FormElement {
       // handler.
       // @todo Form API: Allow form widgets/sections to declare #submit
       //   handlers.
-      if (isset($form['actions']['submit']['#submit']) && array_search('language_configuration_element_submit', $form['actions']['submit']['#submit']) === FALSE) {
-        $form['actions']['submit']['#submit'][] = 'language_configuration_element_submit';
+      $submit_name = isset($form['actions']['save_continue']) ? 'save_continue' : 'submit';
+      if (isset($form['actions'][$submit_name]['#submit']) && array_search('language_configuration_element_submit', $form['actions'][$submit_name]['#submit']) === FALSE) {
+        $form['actions'][$submit_name]['#submit'][] = 'language_configuration_element_submit';
       }
       elseif (array_search('language_configuration_element_submit', $form['#submit']) === FALSE) {
         $form['#submit'][] = 'language_configuration_element_submit';

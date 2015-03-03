@@ -11,8 +11,7 @@ use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\views\Views;
-use Drupal\views_ui\ViewUI;
-use Drupal\views\ViewStorageInterface;
+use Drupal\views\ViewEntityInterface;
 
 /**
  * Defines a View configuration entity class.
@@ -31,7 +30,7 @@ use Drupal\views\ViewStorageInterface;
  *   }
  * )
  */
-class View extends ConfigEntityBase implements ViewStorageInterface {
+class View extends ConfigEntityBase implements ViewEntityInterface {
 
   /**
    * The name of the base table this view will use.
@@ -45,7 +44,7 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
    *
    * @var string
    */
-  public $id = NULL;
+  protected $id = NULL;
 
   /**
    * The label of the view.
@@ -72,7 +71,7 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
   /**
    * The core version the view was created for.
    *
-   * @var int
+   * @var string
    */
   protected $core = \Drupal::CORE_COMPATIBILITY;
 
@@ -108,10 +107,7 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
   protected $module = 'views';
 
   /**
-   * Gets an executable instance for this view.
-   *
-   * @return \Drupal\views\ViewExecutable
-   *   A view executable instance.
+   * {@inheritdoc}
    */
   public function getExecutable() {
     // Ensure that an executable View is available.
@@ -123,7 +119,7 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
   }
 
   /**
-   * Overrides Drupal\Core\Config\Entity\ConfigEntityBase::createDuplicate().
+   * {@inheritdoc}
    */
   public function createDuplicate() {
     $duplicate = parent::createDuplicate();
@@ -132,9 +128,7 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
   }
 
   /**
-   * Overrides \Drupal\Core\Entity\Entity::label().
-   *
-   * When a certain view doesn't have a label return the ID.
+   * {@inheritdoc}
    */
   public function label() {
     if (!$label = $this->get('label')) {
@@ -144,20 +138,7 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
   }
 
   /**
-   * Adds a new display handler to the view, automatically creating an ID.
-   *
-   * @param string $plugin_id
-   *   (optional) The plugin type from the Views plugin annotation. Defaults to
-   *   'page'.
-   * @param string $title
-   *   (optional) The title of the display. Defaults to NULL.
-   * @param string $id
-   *   (optional) The ID to use, e.g., 'default', 'page_1', 'block_2'. Defaults
-   *   to NULL.
-   *
-   * @return string|false
-   *   The key to the display in $view->display, or FALSE if no plugin ID was
-   *   provided.
+   * {@inheritdoc}
    */
   public function addDisplay($plugin_id = 'page', $title = NULL, $id = NULL) {
     if (empty($plugin_id)) {
@@ -213,6 +194,8 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
    *
    * @param string $plugin_id
    *   Which plugin should be used for the new display ID.
+   *
+   * @return string
    */
   protected function generateDisplayId($plugin_id) {
     // 'default' is singular and is unique, so just go with 'default'
@@ -283,29 +266,11 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
 
     $executable = $this->getExecutable();
     $executable->initDisplay();
-    $handler_types = array_keys(Views::getHandlerTypes());
+    $executable->initStyle();
 
     foreach ($executable->displayHandlers as $display) {
-      // Add dependency for the display itself.
+      // Calculate the dependencies each display has.
       $this->calculatePluginDependencies($display);
-
-      // Collect all dependencies of all handlers.
-      foreach ($handler_types as $handler_type) {
-        foreach ($display->getHandlers($handler_type) as $handler) {
-          $this->calculatePluginDependencies($handler);
-        }
-      }
-
-      // Collect all dependencies of plugins.
-      foreach (Views::getPluginTypes('plugin') as $plugin_type) {
-        // Argument validator/default plugins do not return a plugin.
-        // @todo https://www.drupal.org/node/2368767 Calculate argument
-        //   validator/default plugin dependencies.
-        if (!$plugin = $display->getPlugin($plugin_type)) {
-          continue;
-        }
-        $this->calculatePluginDependencies($plugin);
-      }
     }
 
     return $this->dependencies;
@@ -420,7 +385,7 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
     parent::preDelete($storage, $entities);
 
     // Call the remove() hook on the individual displays.
-    /** @var \Drupal\views\ViewStorageInterface $entity */
+    /** @var \Drupal\views\ViewEntityInterface $entity */
     foreach ($entities as $entity) {
       $executable = Views::executableFactory()->get($entity);
       foreach ($entity->get('display') as $display_id => $display) {
@@ -436,7 +401,7 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
     parent::postDelete($storage, $entities);
 
-    $tempstore = \Drupal::service('user.tempstore')->get('views');
+    $tempstore = \Drupal::service('user.shared_tempstore')->get('views');
     foreach ($entities as $entity) {
       $tempstore->delete($entity->id());
     }
@@ -459,6 +424,13 @@ class View extends ConfigEntityBase implements ViewStorageInterface {
       $displays[$key] = $options;
     }
     $this->set('display', $displays);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isInstallable() {
+    return (bool) \Drupal::service('views.views_data')->get($this->base_table);
   }
 
 }

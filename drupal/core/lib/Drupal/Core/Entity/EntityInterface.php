@@ -105,9 +105,9 @@ interface EntityInterface extends AccessibleInterface {
    * example:
    * @code
    * links = {
-   *   "canonical" = "entity.node.canonical",
-   *   "edit-form" = "entity.node.edit_form",
-   *   "version-history" = "entity.node.version_history"
+   *   "canonical" = "/node/{node}",
+   *   "edit-form" = "/node/{node}/edit",
+   *   "version-history" = "/node/{node}/revisions"
    * }
    * @endcode
    * or specified in a callback function set like:
@@ -399,7 +399,7 @@ interface EntityInterface extends AccessibleInterface {
   /**
    * The unique cache tag associated with this entity.
    *
-   * @return array
+   * @return string[]
    *   An array of cache tags.
    */
   public function getCacheTags();
@@ -428,5 +428,16 @@ interface EntityInterface extends AccessibleInterface {
    * @see \Drupal\Core\Config\Entity\ConfigDependencyManager
    */
   public function getConfigDependencyName();
+
+  /**
+   * Gets the configuration target identifier for the entity.
+   *
+   * Used to supply the correct format for storing a reference targeting this
+   * entity in configuration.
+   *
+   * @return string
+   *   The configuration target identifier.
+   */
+  public function getConfigTarget();
 
 }

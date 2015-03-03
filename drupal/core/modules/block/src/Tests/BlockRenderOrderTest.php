@@ -68,12 +68,12 @@ class BlockRenderOrderTest extends WebTestBase {
     }
 
     $this->drupalGet('');
-    $test_content = $this->drupalGetContent('');
+    $test_content = $this->getRawContent('');
 
     $controller = $this->container->get('entity.manager')->getStorage('block');
     foreach ($controller->loadMultiple() as $return_block) {
-      $id = $return_block->get('id');
-      if ($return_block_weight = $return_block->get('weight')) {
+      $id = $return_block->id();
+      if ($return_block_weight = $return_block->getWeight()) {
         $this->assertTrue($test_blocks[$id]['weight'] == $return_block_weight, 'Block weight is set as "' . $return_block_weight  . '" for ' . $id . ' block.');
         $position[$id] = strpos($test_content, Html::getClass('block-' . $test_blocks[$id]['id']));
       }

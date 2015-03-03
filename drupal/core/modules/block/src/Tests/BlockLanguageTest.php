@@ -34,7 +34,7 @@ class BlockLanguageTest extends WebTestBase {
     parent::setUp();
 
     // Create a new user, allow him to manage the blocks and the languages.
-    $this->adminUser = $this->drupalCreateUser(array('administer blocks', 'administer languages', 'administer site configuration'));
+    $this->adminUser = $this->drupalCreateUser(array('administer blocks', 'administer languages'));
     $this->drupalLogin($this->adminUser);
 
     // Add predefined language.
@@ -50,7 +50,7 @@ class BlockLanguageTest extends WebTestBase {
    */
   public function testLanguageBlockVisibility() {
     // Check if the visibility setting is available.
-    $default_theme = \Drupal::config('system.theme')->get('default');
+    $default_theme = $this->config('system.theme')->get('default');
     $this->drupalGet('admin/structure/block/add/system_powered_by_block' . '/' . $default_theme);
 
     $this->assertField('visibility[language][langcodes][en]', 'Language visibility field is visible.');
@@ -68,7 +68,7 @@ class BlockLanguageTest extends WebTestBase {
     $edit = array(
       'site_default_language' => 'fr',
     );
-    $this->drupalPostForm('admin/config/regional/settings', $edit, t('Save configuration'));
+    $this->drupalPostForm('admin/config/regional/language', $edit, t('Save configuration'));
 
     // Check that a page has a block.
     $this->drupalGet('en');
@@ -128,7 +128,7 @@ class BlockLanguageTest extends WebTestBase {
     $this->drupalPostForm('admin/config/regional/language/detection', $edit, t('Save settings'));
 
     // Check if the visibility setting is available with a type setting.
-    $default_theme = \Drupal::config('system.theme')->get('default');
+    $default_theme = $this->config('system.theme')->get('default');
     $this->drupalGet('admin/structure/block/add/system_powered_by_block' . '/' . $default_theme);
     $this->assertField('visibility[language][langcodes][en]', 'Language visibility field is visible.');
     $this->assertField('visibility[language][context_mapping][language]', 'Language type field is visible.');

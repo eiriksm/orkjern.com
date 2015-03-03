@@ -9,6 +9,7 @@ namespace Drupal\Core\Block;
 
 use Drupal\block\BlockInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\CacheContexts;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContextAwarePluginBase;
 use Drupal\Component\Utility\Unicode;
@@ -119,7 +120,7 @@ abstract class BlockBase extends ContextAwarePluginBase implements BlockPluginIn
   /**
    * {@inheritdoc}
    */
-  public function access(AccountInterface $account) {
+  public function access(AccountInterface $account, $return_as_object = FALSE) {
     // @todo Remove self::blockAccess() and force individual plugins to return
     //   their own AccessResult logic. Until that is done in
     //   https://www.drupal.org/node/2375689 the access will be set uncacheable.
@@ -129,7 +130,9 @@ abstract class BlockBase extends ContextAwarePluginBase implements BlockPluginIn
     else {
       $access = AccessResult::forbidden();
     }
-    return $access->setCacheable(FALSE);
+
+    $access->setCacheable(FALSE);
+    return $return_as_object ? $access : $access->isAllowed();
   }
 
   /**
@@ -201,13 +204,14 @@ abstract class BlockBase extends ContextAwarePluginBase implements BlockPluginIn
       '#options' => $period,
     );
     $contexts = \Drupal::service("cache_contexts")->getLabels();
-    // Blocks are always rendered in a "per theme" cache context. No need to
-    // show that option to the end user.
-    unset($contexts['cache_context.theme']);
+    // Blocks are always rendered in the "per language" and "per theme" cache
+    // contexts. No need to show those options to the end user.
+    unset($contexts['language']);
+    unset($contexts['theme']);
     $form['cache']['contexts'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Vary by context'),
-      '#description' => t('The contexts this cached block must be varied by.'),
+      '#description' => t('The contexts this cached block must be varied by. <em>All</em> blocks are varied by language and theme.'),
       '#default_value' => $this->configuration['cache']['contexts'],
       '#options' => $contexts,
       '#states' => array(
@@ -220,8 +224,9 @@ abstract class BlockBase extends ContextAwarePluginBase implements BlockPluginIn
       // Remove the required cache contexts from the list of contexts a user can
       // choose to modify by: they must always be applied.
       $context_labels = array();
-      foreach ($this->getRequiredCacheContexts() as $context) {
-        $context_labels[] = $form['cache']['contexts']['#options'][$context];
+      $all_contexts = \Drupal::service("cache_contexts")->getLabels(TRUE);
+      foreach (array_keys(CacheContexts::parseTokens($this->getRequiredCacheContexts())) as $context) {
+        $context_labels[] = $all_contexts[$context];
         unset($form['cache']['contexts']['#options'][$context]);
       }
       $required_context_list = implode(', ', $context_labels);
@@ -347,6 +352,13 @@ abstract class BlockBase extends ContextAwarePluginBase implements BlockPluginIn
    * {@inheritdoc}
    */
   public function getCacheKeys() {
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
     // Return the required cache contexts, merged with the user-configured cache
     // contexts, if any.
     return array_merge($this->getRequiredCacheContexts(), $this->configuration['cache']['contexts']);

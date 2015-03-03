@@ -39,8 +39,8 @@ use Drupal\filter\Plugin\FilterInterface;
  *     "status" = "status"
  *   },
  *   links = {
- *     "edit-form" = "entity.filter_format.edit_form",
- *     "disable" = "entity.filter_format.disable"
+ *     "edit-form" = "/admin/config/content/formats/manage/{filter_format}",
+ *     "disable" = "/admin/config/content/formats/manage/{filter_format}/disable"
  *   }
  * )
  */
@@ -99,7 +99,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
    * An associative array of filters assigned to the text format, keyed by the
    * instance ID of each filter and using the properties:
    * - id: The plugin ID of the filter plugin instance.
-   * - module: The name of the module providing the filter.
+   * - provider: The name of the provider that owns the filter.
    * - status: (optional) A Boolean indicating whether the filter is
    *   enabled in the text format. Defaults to FALSE.
    * - weight: (optional) The weight of the filter in the text format. Defaults
@@ -400,7 +400,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
    * {@inheritdoc}
    */
   public function onDependencyRemoval(array $dependencies) {
-    $changed = FALSE;
+    $changed = parent::onDependencyRemoval($dependencies);
     $filters = $this->filters();
     foreach ($filters as $filter) {
       // Remove disabled filters, so that this FilterFormat config entity can
@@ -410,9 +410,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
         $changed = TRUE;
       }
     }
-    if ($changed) {
-      $this->save();
-    }
+    return $changed;
   }
 
   /**

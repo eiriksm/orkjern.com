@@ -89,7 +89,7 @@ class EntityTranslationFormTest extends WebTestBase {
     $langcode = $this->langcodes[0];
     $edit['title[0][value]'] = $this->randomMachineName(8);
     $edit['body[0][value]'] = $this->randomMachineName(16);
-    $edit['langcode'] = $langcode;
+    $edit['langcode[0][value]'] = $langcode;
     $this->drupalPostForm('node/add/page', $edit, t('Save'));
     $this->assertRaw(t('Basic page %title has been created.', array('%title' => $edit['title[0][value]'])), 'Basic page created.');
 
@@ -99,7 +99,7 @@ class EntityTranslationFormTest extends WebTestBase {
 
     // Make body translatable.
     $field_storage = FieldStorageConfig::loadByName('node', 'body');
-    $field_storage->translatable = TRUE;
+    $field_storage->setTranslatable(TRUE);
     $field_storage->save();
     $field_storage = FieldStorageConfig::loadByName('node', 'body');
     $this->assertTrue($field_storage->isTranslatable(), 'Field body is translatable.');

@@ -21,7 +21,7 @@ use Drupal\Core\TypedData\TypedDataInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\Entity\View;
-use Drupal\views\ViewStorageInterface;
+use Drupal\views\ViewEntityInterface;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +29,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Stores UI related temporary settings.
  */
-class ViewUI implements ViewStorageInterface {
+class ViewUI implements ViewEntityInterface {
 
   /**
    * Indicates if a view is currently being edited.
@@ -70,7 +70,8 @@ class ViewUI implements ViewStorageInterface {
    * If this view is locked for editing.
    *
    * If this view is locked it will contain the result of
-   * \Drupal\user\TempStore::getMetadata(). Which can be a stdClass or NULL.
+   * \Drupal\user\SharedTempStore::getMetadata(). Which can be a stdClass or
+   * NULL.
    *
    * @var stdClass
    */
@@ -109,7 +110,7 @@ class ViewUI implements ViewStorageInterface {
   /**
    * The View storage object.
    *
-   * @var \Drupal\views\ViewStorageInterface
+   * @var \Drupal\views\ViewEntityInterface
    */
   protected $storage;
 
@@ -165,10 +166,10 @@ class ViewUI implements ViewStorageInterface {
   /**
    * Constructs a View UI object.
    *
-   * @param \Drupal\views\ViewStorageInterface $storage
+   * @param \Drupal\views\ViewEntityInterface $storage
    *   The View storage object to wrap.
    */
-  public function __construct(ViewStorageInterface $storage, ViewExecutable $executable = NULL) {
+  public function __construct(ViewEntityInterface $storage, ViewExecutable $executable = NULL) {
     $this->entityType = 'view';
     $this->storage = $storage;
     if (!isset($executable)) {
@@ -577,7 +578,6 @@ class ViewUI implements ViewStorageInterface {
     $combined = $show_query && $show_stats;
 
     $rows = array('query' => array(), 'statistics' => array());
-    $output = '';
 
     $errors = $this->executable->validate();
     $this->executable->destroy();
@@ -599,7 +599,9 @@ class ViewUI implements ViewStorageInterface {
       $this->executable->setExposedInput($exposed_input);
 
       if (!$this->executable->setDisplay($display_id)) {
-        return t('Invalid display id @display', array('@display' => $display_id));
+        return [
+          '#markup' => t('Invalid display id @display', array('@display' => $display_id)),
+        ];
       }
 
       $this->executable->setArguments($args);
@@ -611,8 +613,9 @@ class ViewUI implements ViewStorageInterface {
 
       // Make view links come back to preview.
 
-      // Also override the current path so we get the pager.
-      $request = new Request();
+      // Also override the current path so we get the pager, and make sure the
+      // Request object gets all of the proper values from $_SERVER.
+      $request = Request::createFromGlobals();
       $request->attributes->set(RouteObjectInterface::ROUTE_NAME, 'entity.view.preview_form');
       $request->attributes->set(RouteObjectInterface::ROUTE_OBJECT, \Drupal::service('router.route_provider')->getRouteByName('entity.view.preview_form'));
       $request->attributes->set('view', $this->storage);
@@ -643,7 +646,6 @@ class ViewUI implements ViewStorageInterface {
 
       // Execute/get the view preview.
       $preview = $this->executable->preview($display_id, $args);
-      $preview = drupal_render($preview);
 
       if ($show_additional_queries) {
         $this->endQueryCapture();
@@ -676,8 +678,19 @@ class ViewUI implements ViewStorageInterface {
               }
             }
             $rows['query'][] = array(
-              array('data' => array('#type' => 'inline_template', '#template' => "<strong>{% trans 'Query' %}</strong>")),
-              array('data' => array('#type' => 'inline_template', '#template' => '<pre>{{ query }}</pre>', '#context' => array('query' => strtr($query_string, $quoted)))),
+              array(
+                'data' => array(
+                  '#type' => 'inline_template',
+                  '#template' => "<strong>{% trans 'Query' %}</strong>",
+                ),
+              ),
+              array(
+                'data' => array(
+                  '#type' => 'inline_template',
+                  '#template' => '<pre>{{ query }}</pre>',
+                  '#context' => array('query' => strtr($query_string, $quoted)),
+                ),
+              ),
             );
             if (!empty($this->additionalQueries)) {
               $queries = '<strong>' . t('These queries were run during view rendering:') . '</strong>';
@@ -690,18 +703,30 @@ class ViewUI implements ViewStorageInterface {
               }
 
               $rows['query'][] = array(
-                array('data' => array('#type' => 'inline_template', '#template' => "<strong>{% trans 'Other queries' %}</strong>")),
+                array(
+                  'data' => array(
+                    '#type' => 'inline_template',
+                    '#template' => "<strong>{% trans 'Other queries' %}</strong>",
+                  ),
+                ),
                 SafeMarkup::set('<pre>' . $queries . '</pre>'),
               );
             }
           }
           if ($show_info) {
             $rows['query'][] = array(
-              array('data' => array('#type' => 'inline_template', '#template' => "<strong>{% trans 'Title' %}</strong>")),
+              array(
+                'data' => array(
+                  '#type' => 'inline_template',
+                  '#template' => "<strong>{% trans 'Title' %}</strong>",
+                ),
+              ),
               Xss::filterAdmin($this->executable->getTitle()),
             );
             if (isset($path)) {
-              $path = \Drupal::l($path, Url::fromUri('base://' . $path));
+              // @todo Views should expect and store a leading /. See:
+              //   https://www.drupal.org/node/2423913
+              $path = \Drupal::l($path, Url::fromUserInput('/' . $path));
             }
             else {
               $path = t('This display has no path.');
@@ -710,10 +735,35 @@ class ViewUI implements ViewStorageInterface {
           }
 
           if ($show_stats) {
-            $rows['statistics'][] = array('<strong>' . t('Query build time') . '</strong>', t('@time ms', array('@time' => intval($this->executable->build_time * 100000) / 100)));
-            $rows['statistics'][] = array('<strong>' . t('Query execute time') . '</strong>', t('@time ms', array('@time' => intval($this->executable->execute_time * 100000) / 100)));
-            $rows['statistics'][] = array('<strong>' . t('View render time') . '</strong>', t('@time ms', array('@time' => intval($this->executable->render_time * 100000) / 100)));
+            $rows['statistics'][] = array(
+              array(
+                'data' => array(
+                  '#type' => 'inline_template',
+                  '#template' => "<strong>{% trans 'Query build time' %}</strong>",
+                ),
+              ),
+              t('@time ms', array('@time' => intval($this->executable->build_time * 100000) / 100)),
+            );
 
+            $rows['statistics'][] = array(
+              array(
+                'data' => array(
+                  '#type' => 'inline_template',
+                  '#template' => "<strong>{% trans 'Query execute time' %}</strong>",
+                ),
+              ),
+              t('@time ms', array('@time' => intval($this->executable->execute_time * 100000) / 100)),
+            );
+
+            $rows['statistics'][] = array(
+              array(
+                'data' => array(
+                  '#type' => 'inline_template',
+                  '#template' => "<strong>{% trans 'View render time' %}</strong>",
+                ),
+              ),
+              t('@time ms', array('@time' => intval($this->executable->render_time * 100000) / 100)),
+            );
           }
           \Drupal::moduleHandler()->alter('views_preview_info', $rows, $this->executable);
         }
@@ -758,10 +808,16 @@ class ViewUI implements ViewStorageInterface {
     }
 
     if ($show_location === 'above' || $show_stats === 'above') {
-      $output .= drupal_render($table) . $preview;
+      $output = [
+        'table' => $table,
+        'preview' => $preview,
+      ];
     }
     elseif ($show_location === 'below' || $show_stats === 'below') {
-      $output .= $preview . drupal_render($table);
+      $output = [
+        'preview' => $preview,
+        'table' => $table,
+      ];
     }
 
     // Ensure that we just remove an additional request we pushed earlier.
@@ -824,7 +880,7 @@ class ViewUI implements ViewStorageInterface {
     unset($executable->default_display);
     $executable->query = NULL;
     unset($executable->displayHandlers);
-    \Drupal::service('user.tempstore')->get('views')->set($this->id(), $this);
+    \Drupal::service('user.shared_tempstore')->get('views')->set($this->id(), $this);
   }
 
   /**
@@ -1143,6 +1199,13 @@ class ViewUI implements ViewStorageInterface {
   /**
    * {@inheritdoc}
    */
+  public function getConfigTarget() {
+    return $this->storage->getConfigTarget();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function onDependencyRemoval(array $dependencies) {
     return $this->storage->onDependencyRemoval($dependencies);
   }
@@ -1158,7 +1221,7 @@ class ViewUI implements ViewStorageInterface {
    * {@inheritdoc}
    */
   public function getCacheTags() {
-    $this->storage->getCacheTags();
+    return $this->storage->getCacheTags();
   }
 
   /**
@@ -1166,6 +1229,27 @@ class ViewUI implements ViewStorageInterface {
    */
   public function getTypedData() {
     $this->storage->getTypedData();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addDisplay($plugin_id = 'page', $title = NULL, $id = NULL) {
+    return $this->storage->addDisplay($plugin_id, $title, $id);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getViewExecutable() {
+    return $this->storage->getViewExecutable();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isInstallable() {
+    return $this->storage->isInstallable();
   }
 
 }

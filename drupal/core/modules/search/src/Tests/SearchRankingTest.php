@@ -8,6 +8,7 @@
 namespace Drupal\search\Tests;
 
 use Drupal\comment\Plugin\Field\FieldType\CommentItemInterface;
+use Drupal\comment\Tests\CommentTestTrait;
 use Drupal\Core\Url;
 
 /**
@@ -16,6 +17,8 @@ use Drupal\Core\Url;
  * @group search
  */
 class SearchRankingTest extends SearchTestBase {
+
+  use CommentTestTrait;
 
   /**
    * The node search page.
@@ -43,7 +46,7 @@ class SearchRankingTest extends SearchTestBase {
 
   public function testRankings() {
     // Add a comment field.
-    $this->container->get('comment.manager')->addDefaultField('node', 'page');
+    $this->addDefaultCommentField('node', 'page');
 
     // Build a list of the rankings to test.
     $node_ranks = array('sticky', 'promote', 'relevance', 'recent', 'comments', 'views');
@@ -95,7 +98,7 @@ class SearchRankingTest extends SearchTestBase {
     $this->drupalPostForm(NULL, $edit, t('Save'));
 
     // Enable counting of statistics.
-    \Drupal::config('statistics.settings')->set('count_content_views', 1)->save();
+    $this->config('statistics.settings')->set('count_content_views', 1)->save();
 
     // Simulating content views is kind of difficult in the test. Leave that
     // to the Statistics module. So instead go ahead and manually update the

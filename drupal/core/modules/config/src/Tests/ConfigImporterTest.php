@@ -71,10 +71,10 @@ class ConfigImporterTest extends KernelTestBase {
     $dynamic_name = 'config_test.dynamic.dotted.default';
 
     // Verify the default configuration values exist.
-    $config = \Drupal::config($dynamic_name);
+    $config = $this->config($dynamic_name);
     $this->assertIdentical($config->get('id'), 'dotted.default');
 
-    // Verify that a bare \Drupal::config() does not involve module APIs.
+    // Verify that a bare $this->config() does not involve module APIs.
     $this->assertFalse(isset($GLOBALS['hook_config_test']));
   }
 
@@ -99,7 +99,7 @@ class ConfigImporterTest extends KernelTestBase {
   function testSiteUuidValidate() {
     $staging = \Drupal::service('config.storage.staging');
     // Create updated configuration object.
-    $config_data = \Drupal::config('system.site')->get();
+    $config_data = $this->config('system.site')->get();
     // Generate a new site UUID.
     $config_data['uuid'] = \Drupal::service('uuid')->generate();
     $staging->write('system.site', $config_data);
@@ -124,7 +124,7 @@ class ConfigImporterTest extends KernelTestBase {
     $staging = $this->container->get('config.storage.staging');
 
     // Verify the default configuration values exist.
-    $config = \Drupal::config($dynamic_name);
+    $config = $this->config($dynamic_name);
     $this->assertIdentical($config->get('id'), 'dotted.default');
 
     // Delete the file from the staging directory.
@@ -136,7 +136,7 @@ class ConfigImporterTest extends KernelTestBase {
     // Verify the file has been removed.
     $this->assertIdentical($storage->read($dynamic_name), FALSE);
 
-    $config = \Drupal::config($dynamic_name);
+    $config = $this->config($dynamic_name);
     $this->assertIdentical($config->get('id'), NULL);
 
     // Verify that appropriate module API hooks have been invoked.
@@ -183,7 +183,7 @@ class ConfigImporterTest extends KernelTestBase {
     $this->configImporter->reset()->import();
 
     // Verify the values appeared.
-    $config = \Drupal::config($dynamic_name);
+    $config = $this->config($dynamic_name);
     $this->assertIdentical($config->get('label'), $original_dynamic_data['label']);
 
     // Verify that appropriate module API hooks have been invoked.
@@ -381,6 +381,10 @@ class ConfigImporterTest extends KernelTestBase {
 
   /**
    * Tests that secondary updates for deleted files work as expected.
+   *
+   * This test is completely hypothetical since we only support full
+   * configuration tree imports. Therefore, any configuration updates that cause
+   * secondary deletes should be reflected already in the staged configuration.
    */
   function testSecondaryUpdateDeletedDeleteeFirst() {
     $name_deleter = 'config_test.dynamic.deleter';
@@ -416,13 +420,10 @@ class ConfigImporterTest extends KernelTestBase {
     $this->configImporter->reset()->import();
 
     $entity_storage = \Drupal::entityManager()->getStorage('config_test');
-    $deleter = $entity_storage->load('deleter');
-    $this->assertEqual($deleter->id(), 'deleter');
-    $this->assertEqual($deleter->uuid(), $values_deleter['uuid']);
-    $this->assertEqual($deleter->label(), $values_deleter['label']);
-    // @todo The deletee entity does not exist as the update worked but the
-    //   entity was deleted after that. There is also no log message as this
-    //   happened outside of the config importer.
+    // Both entities are deleted. ConfigTest::postSave() causes updates of the
+    // deleter entity to delete the deletee entity. Since the deleter depends on
+    // the deletee, removing the deletee causes the deleter to be removed.
+    $this->assertFalse($entity_storage->load('deleter'));
     $this->assertFalse($entity_storage->load('deletee'));
     $logs = $this->configImporter->getErrors();
     $this->assertEqual(count($logs), 0);
@@ -494,9 +495,9 @@ class ConfigImporterTest extends KernelTestBase {
     $staging->write($dynamic_name, $original_dynamic_data);
 
     // Verify the active configuration still returns the default values.
-    $config = \Drupal::config($name);
+    $config = $this->config($name);
     $this->assertIdentical($config->get('foo'), 'bar');
-    $config = \Drupal::config($dynamic_name);
+    $config = $this->config($dynamic_name);
     $this->assertIdentical($config->get('label'), 'Default');
 
     // Import.
@@ -504,9 +505,9 @@ class ConfigImporterTest extends KernelTestBase {
 
     // Verify the values were updated.
     \Drupal::configFactory()->reset($name);
-    $config = \Drupal::config($name);
+    $config = $this->config($name);
     $this->assertIdentical($config->get('foo'), 'beer');
-    $config = \Drupal::config($dynamic_name);
+    $config = $this->config($dynamic_name);
     $this->assertIdentical($config->get('label'), 'Updated');
 
     // Verify that the original file content is still the same.
@@ -526,4 +527,16 @@ class ConfigImporterTest extends KernelTestBase {
     $logs = $this->configImporter->getErrors();
     $this->assertEqual(count($logs), 0);
   }
+
+  /**
+   * Tests the isInstallable method()
+   */
+  function testIsInstallable() {
+    $config_name = 'config_test.dynamic.isinstallable';
+    $this->assertFalse($this->container->get('config.storage')->exists($config_name));
+    \Drupal::state()->set('config_test.isinstallable', TRUE);
+    $this->installConfig(array('config_test'));
+    $this->assertTrue($this->container->get('config.storage')->exists($config_name));
+  }
+
 }

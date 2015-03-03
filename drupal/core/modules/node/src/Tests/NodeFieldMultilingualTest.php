@@ -53,7 +53,7 @@ class NodeFieldMultilingualTest extends WebTestBase {
 
     // Make node body translatable.
     $field_storage = FieldStorageConfig::loadByName('node', 'body');
-    $field_storage->translatable = TRUE;
+    $field_storage->setTranslatable(TRUE);
     $field_storage->save();
   }
 
@@ -84,7 +84,7 @@ class NodeFieldMultilingualTest extends WebTestBase {
     $this->drupalGet("node/{$node->id()}/edit");
     $edit = array(
       $title_key => $this->randomMachineName(8),
-      'langcode' => $langcode,
+      'langcode[0][value]' => $langcode,
     );
     $this->drupalPostForm(NULL, $edit, t('Save'));
     $node = $this->drupalGetNodeByTitle($edit[$title_key], TRUE);

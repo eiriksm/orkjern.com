@@ -164,8 +164,9 @@ abstract class Entity implements EntityInterface {
     $link_templates = $this->linkTemplates();
 
     if (isset($link_templates[$rel])) {
-      // If there is a template for the given relationship type, generate the path.
-      $uri = new Url($link_templates[$rel], $this->urlRouteParameters($rel));
+      $route_parameters = $this->urlRouteParameters($rel);
+      $route_name = "entity.{$this->entityTypeId}." . str_replace(array('-', 'drupal:'), array('_', ''), $rel);
+      $uri = new Url($route_name, $route_parameters);
     }
     else {
       $bundle = $this->bundle();
@@ -192,8 +193,8 @@ abstract class Entity implements EntityInterface {
       }
     }
 
-    // Pass the entity data to _url() so that alter functions do not need to
-    // look up this entity again.
+    // Pass the entity data through as options, so that alter functions do not
+    // need to look up this entity again.
     $uri
       ->setOption('entity_type', $this->getEntityTypeId())
       ->setOption('entity', $this);
@@ -224,7 +225,7 @@ abstract class Entity implements EntityInterface {
    * Returns an array link templates.
    *
    * @return array
-   *   An array of link templates containing route names.
+   *   An array of link templates containing paths.
    */
   protected function linkTemplates() {
     return $this->getEntityType()->getLinkTemplates();
@@ -273,9 +274,12 @@ abstract class Entity implements EntityInterface {
    *   An array of URI placeholders.
    */
   protected function urlRouteParameters($rel) {
-    // The entity ID is needed as a route parameter.
-    $uri_route_parameters[$this->getEntityTypeId()] = $this->id();
+    $uri_route_parameters = [];
 
+    if ($rel != 'collection') {
+      // The entity ID is needed as a route parameter.
+      $uri_route_parameters[$this->getEntityTypeId()] = $this->id();
+    }
     return $uri_route_parameters;
   }
 
@@ -309,7 +313,8 @@ abstract class Entity implements EntityInterface {
    * {@inheritdoc}
    */
   public function language() {
-    $language = $this->languageManager()->getLanguage($this->langcode);
+    $langcode = $this->{$this->getEntityType()->getKey('langcode')};
+    $language = $this->languageManager()->getLanguage($langcode);
     if (!$language) {
       // Make sure we return a proper language object.
       $langcode = $this->langcode ?: LanguageInterface::LANGCODE_NOT_SPECIFIED;
@@ -405,7 +410,7 @@ abstract class Entity implements EntityInterface {
    * {@inheritdoc}
    */
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
-    self::invalidateTagsOnDelete($storage->getEntityType(), $entities);
+    static::invalidateTagsOnDelete($storage->getEntityType(), $entities);
   }
 
   /**
@@ -432,7 +437,7 @@ abstract class Entity implements EntityInterface {
   /**
    * {@inheritdoc}
    *
-   * @return static
+   * @return static|null
    *   The entity object or NULL if there is no entity with the given ID.
    */
   public static function load($id) {
@@ -444,7 +449,8 @@ abstract class Entity implements EntityInterface {
    * {@inheritdoc}
    *
    * @return static[]
-   *   An array of entity objects indexed by their IDs.
+   *   An array of entity objects indexed by their IDs. Returns an empty array
+   *   if no matching entities are found.
    */
   public static function loadMultiple(array $ids = NULL) {
     $entity_manager = \Drupal::entityManager();
@@ -562,6 +568,15 @@ abstract class Entity implements EntityInterface {
    */
   public function getConfigDependencyName() {
     return $this->getEntityTypeId() . ':' . $this->bundle() . ':' . $this->uuid();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigTarget() {
+    // For content entities, use the UUID for the config target identifier.
+    // This ensures that references to the target can be deployed reliably.
+    return $this->uuid();
   }
 
 }

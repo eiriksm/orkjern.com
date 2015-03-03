@@ -9,6 +9,7 @@ namespace Drupal\language\Tests;
 
 use Drupal\Core\Language\Language;
 use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\Url;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Drupal\simpletest\WebTestBase;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,12 +28,19 @@ class LanguageUrlRewritingTest extends WebTestBase {
    */
   public static $modules = array('language', 'language_test');
 
+  /**
+   * An user with permissions to administer languages.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected $webUser;
+
   protected function setUp() {
     parent::setUp();
 
     // Create and login user.
-    $this->web_user = $this->drupalCreateUser(array('administer languages', 'access administration pages'));
-    $this->drupalLogin($this->web_user);
+    $this->webUser = $this->drupalCreateUser(array('administer languages', 'access administration pages'));
+    $this->drupalLogin($this->webUser);
 
     // Install French language.
     $edit = array();
@@ -58,7 +66,7 @@ class LanguageUrlRewritingTest extends WebTestBase {
 
     // Check that URL rewriting is not applied to subrequests.
     $this->drupalGet('language_test/subrequest');
-    $this->assertText($this->web_user->getUsername(), 'Page correctly retrieved');
+    $this->assertText($this->webUser->getUsername(), 'Page correctly retrieved');
   }
 
   /**
@@ -114,7 +122,7 @@ class LanguageUrlRewritingTest extends WebTestBase {
     $this->rebuildContainer();
 
     // Enable domain configuration.
-    \Drupal::config('language.negotiation')
+    $this->config('language.negotiation')
       ->set('url.source', LanguageNegotiationUrl::CONFIG_DOMAIN)
       ->save();
 
@@ -131,21 +139,21 @@ class LanguageUrlRewritingTest extends WebTestBase {
 
     // Create an absolute French link.
     $language = \Drupal::languageManager()->getLanguage('fr');
-    $url = _url('', array(
+    $url = Url::fromRoute('<none>', [], [
       'absolute' => TRUE,
       'language' => $language,
-    ));
+    ])->toString();
 
     $expected = ($index_php ? 'http://example.fr:88/index.php' : 'http://example.fr:88') . rtrim(base_path(), '/') . '/';
 
     $this->assertEqual($url, $expected, 'The right port is used.');
 
-    // If we set the port explicitly in _url(), it should not be overriden.
-    $url = _url('', array(
+    // If we set the port explicitly, it should not be overriden.
+    $url = Url::fromRoute('<none>', [], [
       'absolute' => TRUE,
       'language' => $language,
       'base_url' => $request->getBaseUrl() . ':90',
-    ));
+    ])->toString();
 
     $expected = $index_php ? 'http://example.fr:90/index.php' : 'http://example.fr:90' . rtrim(base_path(), '/') . '/';
 

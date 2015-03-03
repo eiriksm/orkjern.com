@@ -10,7 +10,11 @@ namespace Drupal\Core;
 use Drupal\Core\Cache\CacheContextsPass;
 use Drupal\Core\Cache\ListCacheBinsPass;
 use Drupal\Core\DependencyInjection\Compiler\BackendCompilerPass;
+use Drupal\Core\DependencyInjection\Compiler\RegisterLazyRouteEnhancers;
+use Drupal\Core\DependencyInjection\Compiler\RegisterLazyRouteFilters;
+use Drupal\Core\DependencyInjection\Compiler\DependencySerializationTraitPass;
 use Drupal\Core\DependencyInjection\Compiler\StackedKernelPass;
+use Drupal\Core\DependencyInjection\Compiler\StackedSessionHandlerPass;
 use Drupal\Core\DependencyInjection\Compiler\RegisterStreamWrappersPass;
 use Drupal\Core\DependencyInjection\ServiceProviderInterface;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -60,6 +64,8 @@ class CoreServiceProvider implements ServiceProviderInterface  {
 
     $container->addCompilerPass(new StackedKernelPass());
 
+    $container->addCompilerPass(new StackedSessionHandlerPass());
+
     $container->addCompilerPass(new MainContentRenderersPass());
 
     // Collect tagged handler services as method calls on consumer services.
@@ -70,6 +76,8 @@ class CoreServiceProvider implements ServiceProviderInterface  {
     $container->addCompilerPass(new RegisterKernelListenersPass(), PassConfig::TYPE_AFTER_REMOVING);
 
     $container->addCompilerPass(new RegisterAccessChecksPass());
+    $container->addCompilerPass(new RegisterLazyRouteEnhancers());
+    $container->addCompilerPass(new RegisterLazyRouteFilters());
 
     // Add a compiler pass for registering services needing destruction.
     $container->addCompilerPass(new RegisterServicesForDestructionPass());
@@ -80,6 +88,8 @@ class CoreServiceProvider implements ServiceProviderInterface  {
 
     // Register plugin managers.
     $container->addCompilerPass(new PluginManagerPass());
+
+    $container->addCompilerPass(new DependencySerializationTraitPass());
   }
 
   /**

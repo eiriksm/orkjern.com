@@ -26,7 +26,7 @@ class DbLogTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('dblog', 'node', 'forum', 'help');
+  public static $modules = array('dblog', 'node', 'forum', 'help', 'block');
 
   /**
    * A user with some relevant administrative permissions.
@@ -42,8 +42,12 @@ class DbLogTest extends WebTestBase {
    */
   protected $webUser;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
+    $this->drupalPlaceBlock('system_breadcrumb_block');
 
     // Create users with specific permissions.
     $this->adminUser = $this->drupalCreateUser(array('administer site configuration', 'access administration pages', 'access site reports', 'administer users'));
@@ -95,7 +99,7 @@ class DbLogTest extends WebTestBase {
     $this->assertResponse(200);
 
     // Check row limit variable.
-    $current_limit = \Drupal::config('dblog.settings')->get('row_limit');
+    $current_limit = $this->config('dblog.settings')->get('row_limit');
     $this->assertTrue($current_limit == $row_limit, format_string('[Cache] Row limit variable of @count equals row limit of @limit', array('@count' => $current_limit, '@limit' => $row_limit)));
   }
 

@@ -11,6 +11,7 @@ use Drupal\comment\CommentInterface;
 use Drupal\comment\Entity\CommentType;
 use Drupal\comment\Plugin\Field\FieldType\CommentItemInterface;
 use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field_ui\Tests\FieldUiTestTrait;
 use Drupal\simpletest\WebTestBase;
 use Drupal\Core\Entity\EntityInterface;
@@ -23,18 +24,30 @@ use Drupal\Core\Entity\EntityInterface;
 class CommentNonNodeTest extends WebTestBase {
 
   use FieldUiTestTrait;
+  use CommentTestTrait;
 
-  public static $modules = array('comment', 'user', 'field_ui', 'entity_test');
+  public static $modules = array('comment', 'user', 'field_ui', 'entity_test', 'block');
 
   /**
    * An administrative user with permission to configure comment settings.
    *
    * @var \Drupal\user\UserInterface
    */
-  protected $admin_user;
+  protected $adminUser;
 
+  /**
+   * The entity to use within tests.
+   *
+   * @var \Drupal\entity_test\Entity\EntityTest
+   */
+  protected $entity;
+
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
+    $this->drupalPlaceBlock('system_breadcrumb_block');
 
     // Create a bundle for entity_test.
     entity_test_create_bundle('entity_test', 'Entity Test', 'entity_test');
@@ -45,14 +58,14 @@ class CommentNonNodeTest extends WebTestBase {
       'target_entity_type_id' => 'entity_test',
     ))->save();
     // Create comment field on entity_test bundle.
-    $this->container->get('comment.manager')->addDefaultField('entity_test', 'entity_test');
+    $this->addDefaultCommentField('entity_test', 'entity_test');
 
     // Verify that bundles are defined correctly.
     $bundles = \Drupal::entityManager()->getBundleInfo('comment');
     $this->assertEqual($bundles['comment']['label'], 'Comment settings');
 
     // Create test user.
-    $this->admin_user = $this->drupalCreateUser(array(
+    $this->adminUser = $this->drupalCreateUser(array(
       'administer comments',
       'skip comment approval',
       'post comments',
@@ -173,7 +186,7 @@ class CommentNonNodeTest extends WebTestBase {
       $regex .= $comment->comment_body->value . '(.*?)';
       $regex .= '/s';
 
-      return (boolean) preg_match($regex, $this->drupalGetContent());
+      return (boolean) preg_match($regex, $this->getRawContent());
     }
     else {
       return FALSE;
@@ -187,7 +200,7 @@ class CommentNonNodeTest extends WebTestBase {
    *   Contact info is available.
    */
   function commentContactInfoAvailable() {
-    return preg_match('/(input).*?(name="name").*?(input).*?(name="mail").*?(input).*?(name="homepage")/s', $this->drupalGetContent());
+    return preg_match('/(input).*?(name="name").*?(input).*?(name="mail").*?(input).*?(name="homepage")/s', $this->getRawContent());
   }
 
   /**
@@ -208,7 +221,7 @@ class CommentNonNodeTest extends WebTestBase {
 
     if ($operation == 'delete') {
       $this->drupalPostForm(NULL, array(), t('Delete comments'));
-      $this->assertRaw(format_plural(1, 'Deleted 1 comment.', 'Deleted @count comments.'), format_string('Operation "@operation" was performed on comment.', array('@operation' => $operation)));
+      $this->assertRaw(\Drupal::translation()->formatPlural(1, 'Deleted 1 comment.', 'Deleted @count comments.'), format_string('Operation "@operation" was performed on comment.', array('@operation' => $operation)));
     }
     else {
       $this->assertText(t('The update has been performed.'), format_string('Operation "@operation" was performed on comment.', array('@operation' => $operation)));
@@ -226,7 +239,7 @@ class CommentNonNodeTest extends WebTestBase {
    */
   function getUnapprovedComment($subject) {
     $this->drupalGet('admin/content/comment/approval');
-    preg_match('/href="(.*?)#comment-([^"]+)"(.*?)>(' . $subject . ')/', $this->drupalGetContent(), $match);
+    preg_match('/href="(.*?)#comment-([^"]+)"(.*?)>(' . $subject . ')/', $this->getRawContent(), $match);
 
     return $match[2];
   }
@@ -244,18 +257,41 @@ class CommentNonNodeTest extends WebTestBase {
     $this->assertText(t('Comments'));
     $this->assertLinkByHref('entity_test/structure/entity_test/fields/entity_test.entity_test.comment');
     // Test widget hidden option is not visible when there's no comments.
-    $this->drupalGet('entity_test/structure/entity_test/entity-test/fields/entity_test.entity_test.comment');
+    $this->drupalGet('entity_test/structure/entity_test/fields/entity_test.entity_test.comment');
+    $this->assertResponse(200);
     $this->assertNoField('edit-default-value-input-comment-und-0-status-0');
+    // Test that field to change cardinality is not available.
+    $this->drupalGet('entity_test/structure/entity_test/fields/entity_test.entity_test.comment/storage');
+    $this->assertResponse(200);
+    $this->assertNoField('field_storage[cardinality_number]');
+    $this->assertNoField('field_storage[cardinality]');
 
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
+
+    // Test breadcrumb on comment add page.
+    $this->drupalGet('comment/reply/entity_test/' . $this->entity->id() . '/comment');
+    $xpath = '//nav[@class="breadcrumb"]/ol/li[last()]/a';
+    $this->assertEqual(current($this->xpath($xpath)), $this->entity->label(), 'Last breadcrumb item is equal to node title on comment reply page.');
 
     // Post a comment.
+    /** @var \Drupal\comment\CommentInterface $comment1 */
     $comment1 = $this->postComment($this->entity, $this->randomMachineName(), $this->randomMachineName());
     $this->assertTrue($this->commentExists($comment1), 'Comment on test entity exists.');
 
-    // Assert the breadcrumb is valid.
-    $this->drupalGet('comment/reply/entity_test/' . $this->entity->id() . '/comment');
-    $this->assertLink($this->entity->label());
+    // Test breadcrumb on comment reply page.
+    $this->drupalGet('comment/reply/entity_test/' . $this->entity->id() . '/comment/' . $comment1->id());
+    $xpath = '//nav[@class="breadcrumb"]/ol/li[last()]/a';
+    $this->assertEqual(current($this->xpath($xpath)), $comment1->getSubject(), 'Last breadcrumb item is equal to comment title on comment reply page.');
+
+    // Test breadcrumb on comment edit page.
+    $this->drupalGet('comment/' . $comment1->id() . '/edit');
+    $xpath = '//nav[@class="breadcrumb"]/ol/li[last()]/a';
+    $this->assertEqual(current($this->xpath($xpath)), $comment1->getSubject(), 'Last breadcrumb item is equal to comment subject on edit page.');
+
+    // Test breadcrumb on comment delete page.
+    $this->drupalGet('comment/' . $comment1->id() . '/delete');
+    $xpath = '//nav[@class="breadcrumb"]/ol/li[last()]/a';
+    $this->assertEqual(current($this->xpath($xpath)), $comment1->getSubject(), 'Last breadcrumb item is equal to comment subject on delete confirm page.');
 
     // Unpublish the comment.
     $this->performCommentOperation($comment1, 'unpublish');
@@ -353,12 +389,16 @@ class CommentNonNodeTest extends WebTestBase {
     $this->assertNoFieldChecked('edit-default-value-input-comment-0-status-1');
     $this->assertFieldChecked('edit-default-value-input-comment-0-status-2');
     // Test comment option change in field settings.
-    $edit = array('default_value_input[comment][0][status]' => CommentItemInterface::CLOSED);
+    $edit = array(
+      'default_value_input[comment][0][status]' => CommentItemInterface::CLOSED,
+      'field[settings][anonymous]' => COMMENT_ANONYMOUS_MAY_CONTACT,
+    );
     $this->drupalPostForm(NULL, $edit, t('Save settings'));
     $this->drupalGet('entity_test/structure/entity_test/fields/entity_test.entity_test.comment');
     $this->assertNoFieldChecked('edit-default-value-input-comment-0-status-0');
     $this->assertFieldChecked('edit-default-value-input-comment-0-status-1');
     $this->assertNoFieldChecked('edit-default-value-input-comment-0-status-2');
+    $this->assertFieldByName('field[settings][anonymous]', COMMENT_ANONYMOUS_MAY_CONTACT);
 
     // Add a new comment-type.
     $bundle = CommentType::create(array(
@@ -379,9 +419,10 @@ class CommentNonNodeTest extends WebTestBase {
     $this->fieldUIAddNewField('entity_test/structure/entity_test', 'barfoo', 'BarFoo', 'comment', $storage_edit);
 
     // Check the field contains the correct comment type.
-    $field_storage = entity_load('field_storage_config', 'entity_test.field_barfoo');
+    $field_storage = FieldStorageConfig::load('entity_test.field_barfoo');
     $this->assertTrue($field_storage);
     $this->assertEqual($field_storage->getSetting('comment_type'), 'foobar');
+    $this->assertEqual($field_storage->getCardinality(), 1);
 
     // Test the new entity commenting inherits default.
     $random_label = $this->randomMachineName();

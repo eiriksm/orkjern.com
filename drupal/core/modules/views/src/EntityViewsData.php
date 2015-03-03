@@ -148,6 +148,14 @@ class EntityViewsData implements EntityHandlerInterface, EntityViewsDataInterfac
       }
     }
 
+    $data[$base_table]['operations'] = array(
+      'field' => array(
+        'title' => $this->t('Operations links'),
+        'help' => $this->t('Provides links to perform entity operations.'),
+        'id' => 'entity_operations',
+      ),
+    );
+
     // Setup relations to the revisions/property data.
     if ($data_table) {
       $data[$data_table]['table']['join'][$base_table] = [
@@ -390,7 +398,7 @@ class EntityViewsData implements EntityHandlerInterface, EntityViewsDataInterfac
    */
   protected function processViewsDataForLanguage($table, FieldDefinitionInterface $field_definition, array &$views_field, $field_column_name) {
     // Apply special titles for the langcode field.
-    if ($field_definition->getName() == 'langcode') {
+    if ($field_definition->getName() == $this->entityType->getKey('langcode')) {
       if ($table == $this->entityType->getDataTable() || $table == $this->entityType->getRevisionDataTable()) {
         $views_field['title'] = $this->t('Translation language');
       }

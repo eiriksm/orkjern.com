@@ -7,9 +7,9 @@
 
 namespace Drupal\language\Form;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
-use Drupal\Core\Form\ConfigFormBase;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\language\Entity\ContentLanguageSettings;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Configure the content language settings for this site.
  */
-class ContentLanguageSettingsForm extends ConfigFormBase {
+class ContentLanguageSettingsForm extends FormBase {
 
   /**
    * The entity manager.
@@ -29,14 +29,10 @@ class ContentLanguageSettingsForm extends ConfigFormBase {
   /**
    * Constructs a ContentLanguageSettingsForm object.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityManagerInterface $entity_manager) {
-    parent::__construct($config_factory);
-
+  public function __construct(EntityManagerInterface $entity_manager) {
     $this->entityManager = $entity_manager;
   }
 
@@ -45,7 +41,6 @@ class ContentLanguageSettingsForm extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('config.factory'),
       $container->get('entity.manager')
     );
   }
@@ -68,7 +63,7 @@ class ContentLanguageSettingsForm extends ConfigFormBase {
     $bundles = $this->entityManager->getAllBundleInfo();
     $language_configuration = array();
     foreach ($entity_types as $entity_type_id => $entity_type) {
-      if (!$entity_type->isTranslatable()) {
+      if (!$entity_type instanceof ContentEntityTypeInterface || !$entity_type->hasKey('langcode')) {
         continue;
       }
       $labels[$entity_type_id] = $entity_type->getLabel() ?: $entity_type_id;
@@ -136,7 +131,12 @@ class ContentLanguageSettingsForm extends ConfigFormBase {
       }
     }
 
-    $form = parent::buildForm($form, $form_state);
+    $form['actions']['#type'] = 'actions';
+    $form['actions']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => $this->t('Save configuration'),
+      '#button_type' => 'primary',
+    );
 
     return $form;
   }

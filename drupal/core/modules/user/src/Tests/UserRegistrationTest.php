@@ -25,7 +25,7 @@ class UserRegistrationTest extends WebTestBase {
   public static $modules = array('field_test');
 
   function testRegistrationWithEmailVerification() {
-    $config = \Drupal::config('user.settings');
+    $config = $this->config('user.settings');
     // Require email verification.
     $config->set('verify_mail', TRUE)->save();
 
@@ -58,7 +58,7 @@ class UserRegistrationTest extends WebTestBase {
   }
 
   function testRegistrationWithoutEmailVerification() {
-    $config = \Drupal::config('user.settings');
+    $config = $this->config('user.settings');
     // Don't require email verification and allow registration by site visitors
     // without administrator approval.
     $config
@@ -124,7 +124,7 @@ class UserRegistrationTest extends WebTestBase {
   function testRegistrationEmailDuplicates() {
     // Don't require email verification and allow registration by site visitors
     // without administrator approval.
-    \Drupal::config('user.settings')
+    $this->config('user.settings')
       ->set('verify_mail', FALSE)
       ->set('register', USER_REGISTER_VISITORS)
       ->save();
@@ -138,25 +138,25 @@ class UserRegistrationTest extends WebTestBase {
 
     // Attempt to create a new account using an existing email address.
     $this->drupalPostForm('user/register', $edit, t('Create new account'));
-    $this->assertText(t('The email address @email is already registered.', array('@email' => $duplicate_user->getEmail())), 'Supplying an exact duplicate email address displays an error message');
+    $this->assertText(t('The email address @email is already taken.', array('@email' => $duplicate_user->getEmail())), 'Supplying an exact duplicate email address displays an error message');
 
     // Attempt to bypass duplicate email registration validation by adding spaces.
     $edit['mail'] = '   ' . $duplicate_user->getEmail() . '   ';
 
     $this->drupalPostForm('user/register', $edit, t('Create new account'));
-    $this->assertText(t('The email address @email is already registered.', array('@email' => $duplicate_user->getEmail())), 'Supplying a duplicate email address with added whitespace displays an error message');
+    $this->assertText(t('The email address @email is already taken.', array('@email' => $duplicate_user->getEmail())), 'Supplying a duplicate email address with added whitespace displays an error message');
   }
 
   function testRegistrationDefaultValues() {
     // Don't require email verification and allow registration by site visitors
     // without administrator approval.
-    $config_user_settings = \Drupal::config('user.settings')
+    $config_user_settings = $this->config('user.settings')
       ->set('verify_mail', FALSE)
       ->set('register', USER_REGISTER_VISITORS)
       ->save();
 
     // Set the default timezone to Brussels.
-    $config_system_date = \Drupal::config('system.date')
+    $config_system_date = $this->config('system.date')
       ->set('timezone.user.configurable', 1)
       ->set('timezone.default', 'Europe/Brussels')
       ->save();
@@ -247,7 +247,7 @@ class UserRegistrationTest extends WebTestBase {
     $this->assertEqual($new_user->test_user_field->value, $value, 'The field value was correclty saved.');
 
     // Check that the 'add more' button works.
-    $field_storage->cardinality = FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED;
+    $field_storage->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
     $field_storage->save();
     foreach (array('js', 'nojs') as $js) {
       $this->drupalGet('user/register');

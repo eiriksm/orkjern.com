@@ -10,7 +10,7 @@ namespace Drupal\Core\Language;
 /**
  * An object containing the information for an interface language.
  *
- * @see language_default()
+ * @see \Drupal\Core\Language\LanguageManager::getLanguage()
  */
 class Language implements LanguageInterface {
 
@@ -103,15 +103,6 @@ class Language implements LanguageInterface {
    */
   public function getName() {
     return $this->name;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setName($name) {
-    $this->name = $name;
-
-    return $this;
   }
 
   /**

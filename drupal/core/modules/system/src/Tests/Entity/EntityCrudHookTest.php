@@ -9,11 +9,13 @@ namespace Drupal\system\Tests\Entity;
 
 use Drupal\comment\Entity\Comment;
 use Drupal\comment\Plugin\Field\FieldType\CommentItemInterface;
+use Drupal\comment\Tests\CommentTestTrait;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\block\Entity\Block;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\node\Entity\Node;
+use Drupal\taxonomy\Entity\Vocabulary;
 
 /**
  * Tests the invocation of hooks when creating, inserting, loading, updating or
@@ -31,6 +33,8 @@ use Drupal\node\Entity\Node;
  * @group Entity
  */
 class EntityCrudHookTest extends EntityUnitTestBase {
+
+  use CommentTestTrait;
 
   /**
    * Modules to enable.
@@ -139,7 +143,7 @@ class EntityCrudHookTest extends EntityUnitTestBase {
       'type' => 'article',
       'name' => 'Article',
     ))->save();
-    $this->container->get('comment.manager')->addDefaultField('node', 'article', 'comment', CommentItemInterface::OPEN);
+    $this->addDefaultCommentField('node', 'article', 'comment', CommentItemInterface::OPEN);
 
     $node = entity_create('node', array(
       'uid' => $account->id(),
@@ -442,7 +446,7 @@ class EntityCrudHookTest extends EntityUnitTestBase {
     ));
 
     $GLOBALS['entity_crud_hook_test'] = array();
-    $vocabulary = entity_load('taxonomy_vocabulary', $vocabulary->id());
+    $vocabulary = Vocabulary::load($vocabulary->id());
 
     $this->assertHookMessageOrder(array(
       'entity_crud_hook_test_entity_load called for type taxonomy_vocabulary',
@@ -450,7 +454,7 @@ class EntityCrudHookTest extends EntityUnitTestBase {
     ));
 
     $GLOBALS['entity_crud_hook_test'] = array();
-    $vocabulary->name = 'New name';
+    $vocabulary->set('name', 'New name');
     $vocabulary->save();
 
     $this->assertHookMessageOrder(array(

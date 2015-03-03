@@ -84,7 +84,7 @@ class NodeTermData extends RelationshipPluginBase  {
   }
 
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
-    $vocabularies = entity_load_multiple('taxonomy_vocabulary');
+    $vocabularies = $this->vocabularyStorage->loadMultiple();
     $options = array();
     foreach ($vocabularies as $voc) {
       $options[$voc->id()] = $voc->label();
@@ -136,7 +136,7 @@ class NodeTermData extends RelationshipPluginBase  {
 
       $query = db_select('taxonomy_term_data', 'td');
       $query->addJoin($def['type'], 'taxonomy_index', 'tn', 'tn.tid = td.tid');
-      $query->condition('td.vid', array_filter($this->options['vids']));
+      $query->condition('td.vid', array_filter($this->options['vids']), 'IN');
       $query->addTag('term_access');
       $query->fields('td');
       $query->fields('tn', array('nid'));
