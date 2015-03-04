@@ -38,7 +38,6 @@ function drush_orkjern_import_download_nodes() {
         $node_res = $client->send($node_req);
         $c = $node_res->getStatusCode();
         if ($c == 200) {
-          // Assemble a fine piece of node.
           $json = $node_res->json();
           file_put_contents('./import/' . substr($node['path'], 1) . '.json', json_encode($json));
         }
@@ -87,18 +86,23 @@ function drush_orkjern_import_import_nodes() {
         'format' => 'full_html',
       ));
       $taxs = array();
-      if (!empty($node->field_tags_1)) {
-        $tags = explode(', ', $node->field_tags_1);
+      if (!empty($node->field_tags)) {
+        // Parse the tags, they are hidden in markup.
+        $tags = explode('<li>', $node->field_tags);
         foreach ($tags as $tag) {
-          if (!$has_tags[$tag]) {
-            $t = entity_create('taxonomy_term', array(
-              'name' => $tag,
-              'vid' => 'tags',
-            ));
-            $t->save();
-            $has_tags[$tag] = $t->id();            
+          $tag = trim(strip_tags($tag));
+          $length = strlen($tag);
+          if ($length > 0) {
+            if (!$has_tags[$tag]) {
+              $t = entity_create('taxonomy_term', array(
+                'name' => $tag,
+                'vid' => 'tags',
+              ));
+              $t->save();
+              $has_tags[$tag] = $t->id();
+            }
+            $taxs[] = $has_tags[$tag];
           }
-          $taxs[] = $has_tags[$tag];
         }
       }
       $n->get('field_tags')->setValue($taxs);
