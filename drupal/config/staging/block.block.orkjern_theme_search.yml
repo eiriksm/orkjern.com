@@ -1,0 +1,23 @@
+uuid: bc44aae8-04af-4300-af4d-77397e4e310e
+langcode: en
+status: true
+dependencies:
+  module:
+    - search
+  theme:
+    - orkjern_theme
+id: orkjern_theme_search
+theme: orkjern_theme
+region: messages
+weight: -1
+provider: null
+plugin: search_form_block
+settings:
+  id: search_form_block
+  label: Search
+  provider: search
+  label_display: visible
+  cache:
+    max_age: 0
+    contexts: {  }
+visibility: {  }

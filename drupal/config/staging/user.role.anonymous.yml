@@ -1,0 +1,14 @@
+uuid: 4f31d0cd-129a-4f81-b400-aaebbd4e5fcd
+langcode: en
+status: true
+dependencies: {  }
+id: anonymous
+label: 'Anonymous user'
+weight: 0
+permissions:
+  - 'use text format plain_text'
+  - 'access content'
+  - 'use text format restricted_html'
+  - 'access comments'
+  - 'access site-wide contact form'
+  - 'restful get entity:node'

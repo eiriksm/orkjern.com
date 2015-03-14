@@ -1,0 +1,23 @@
+uuid: 70bb3fd8-767c-40cf-8700-cb0ad2e16bfd
+langcode: en
+status: true
+dependencies:
+  module:
+    - user
+  theme:
+    - orkjern_theme
+id: orkjern_theme_login
+theme: orkjern_theme
+region: messages
+weight: 0
+provider: null
+plugin: user_login_block
+settings:
+  id: user_login_block
+  label: 'User login'
+  provider: user
+  label_display: visible
+  cache:
+    max_age: 0
+    contexts: {  }
+visibility: {  }

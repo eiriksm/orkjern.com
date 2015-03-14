@@ -1,0 +1,23 @@
+uuid: c2ae0888-029d-4566-8f04-4c5b39e46e5a
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - orkjern_theme
+id: orkjern_theme_breadcrumbs
+theme: orkjern_theme
+region: messages
+weight: 0
+provider: null
+plugin: system_breadcrumb_block
+settings:
+  id: system_breadcrumb_block
+  label: Breadcrumbs
+  provider: system
+  label_display: '0'
+  cache:
+    max_age: 0
+    contexts: {  }
+visibility: {  }

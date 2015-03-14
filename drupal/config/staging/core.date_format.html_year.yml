@@ -1,0 +1,8 @@
+uuid: bad3485e-e050-4896-bc03-3ba479a46345
+langcode: en
+status: true
+dependencies: {  }
+id: html_year
+label: 'HTML Year'
+locked: true
+pattern: 'Y'
