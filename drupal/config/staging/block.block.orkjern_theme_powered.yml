@@ -9,7 +9,7 @@ dependencies:
 id: orkjern_theme_powered
 theme: orkjern_theme
 region: messages
-weight: 10
+weight: -6
 provider: null
 plugin: system_powered_by_block
 settings:
