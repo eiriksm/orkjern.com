@@ -10,7 +10,18 @@ function orkjern_import_drush_command() {
   $items['import-nodes'] = array(
     'description' => dt('Import all content from live site'),
   );
+  $items['delete-shortcuts'] = array(
+    'description' => dt('Deletes all shortcuts, so we can uninstall the shortcut module.'),
+  );
   return $items;
+}
+
+function drush_orkjern_import_delete_shortcuts() {
+  $rows = db_query('SELECT * FROM {shortcut}');
+  foreach ($rows as $row) {
+    $s = entity_load('shortcut', $row->id);
+    $s->delete();
+  }
 }
 
 function drush_orkjern_import_download_nodes() {
