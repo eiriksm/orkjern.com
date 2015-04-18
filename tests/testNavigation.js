@@ -1,5 +1,5 @@
 'use strict';
-var system = require('system'); 
+var system = require('system');
 casper.test.begin('The navigation system is working', function(test) {
   casper.start(system.env.TEST_URL, function() {
     // There should be more than one article on the front page.

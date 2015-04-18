@@ -1,5 +1,5 @@
 'use strict';
-var system = require('system'); 
+var system = require('system');
 var url, title, text;
 
 var plainText = function(text) {
@@ -21,7 +21,7 @@ casper.test.begin('The page works without JavaScript as well', function(test) {
       test.assertExists('.node__content p:first-child');
     });
     this.then(function() {
-      url = casper.getCurrentUrl(); 
+      url = casper.getCurrentUrl();
       title = casper.fetchText('#page-title');
       text = casper.fetchText('.node__content');
     });
@@ -35,7 +35,7 @@ casper.test.begin('The page works without JavaScript as well', function(test) {
       var text1 = plainText(text);
       var text2 = plainText(casper.fetchText('.node__content'));
       test.assertEqual(text1, text2, 'Text is the same on ajax and non-ajax page');
-    }); 
+    });
   }).run(function() {
     test.done();
   });
