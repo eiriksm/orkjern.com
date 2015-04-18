@@ -1,10 +1,11 @@
-uuid: 4f31d0cd-129a-4f81-b400-aaebbd4e5fcd
+uuid: b3b6b19c-1ce1-4c09-a009-9c72797c27c1
 langcode: en
 status: true
 dependencies: {  }
 id: anonymous
 label: 'Anonymous user'
 weight: 0
+is_admin: false
 permissions:
   - 'use text format plain_text'
   - 'access content'

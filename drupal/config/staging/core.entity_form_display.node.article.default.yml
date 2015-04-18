@@ -1,15 +1,13 @@
-uuid: 99cb2796-c852-418b-992f-470dc83ddca9
+uuid: 06cb4222-d33a-4f41-9c25-37b79748cb8a
 langcode: en
 status: true
 dependencies:
   config:
     - field.field.node.article.body
-    - field.field.node.article.comment
     - field.field.node.article.field_image
     - field.field.node.article.field_tags
     - node.type.article
   module:
-    - comment
     - image
     - path
     - taxonomy
@@ -26,11 +24,6 @@ content:
       rows: 9
       summary_rows: 3
       placeholder: ''
-    third_party_settings: {  }
-  comment:
-    type: comment_default
-    weight: 20
-    settings: {  }
     third_party_settings: {  }
   created:
     type: datetime_timestamp

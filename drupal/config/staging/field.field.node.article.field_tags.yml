@@ -1,4 +1,4 @@
-uuid: f4b01646-2af7-472b-8a28-403db04fea76
+uuid: d2522912-513d-4a8e-9c00-b02ec5006aac
 langcode: en
 status: true
 dependencies:
@@ -18,5 +18,6 @@ translatable: true
 default_value: {  }
 default_value_callback: ''
 settings:
-  handler: default
+  handler: 'default:taxonomy_term'
+  handler_settings: {  }
 field_type: taxonomy_term_reference

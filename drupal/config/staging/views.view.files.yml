@@ -1,4 +1,4 @@
-uuid: 730c92c2-d71f-4e1e-8657-8708fccd7444
+uuid: e210b30f-1647-482a-864e-787255f2448f
 langcode: en
 status: true
 dependencies:
@@ -682,6 +682,11 @@ display:
       group_by: true
       show_admin_links: true
       display_extenders: {  }
+    cache_metadata:
+      contexts:
+        - languages
+        - url
+      cacheable: false
   page_1:
     display_plugin: page
     id: page_1
@@ -710,6 +715,11 @@ display:
           admin_label: 'File usage'
           required: false
       display_extenders: {  }
+    cache_metadata:
+      contexts:
+        - languages
+        - url
+      cacheable: false
   page_2:
     display_plugin: page
     id: page_2
@@ -1060,3 +1070,8 @@ display:
           admin_label: 'File usage'
           required: true
       display_extenders: {  }
+    cache_metadata:
+      contexts:
+        - languages
+        - url
+      cacheable: false

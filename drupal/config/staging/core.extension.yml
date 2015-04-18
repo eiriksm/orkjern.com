@@ -2,11 +2,9 @@ module:
   block: 0
   block_content: 0
   breakpoint: 0
-  ckeditor: 0
   color: 0
   comment: 0
   config: 0
-  contact: 0
   contextual: 0
   datetime: 0
   dblog: 0
@@ -17,8 +15,6 @@ module:
   file: 0
   filter: 0
   hal: 0
-  help: 0
-  history: 0
   image: 0
   link: 0
   menu_ui: 0
@@ -29,14 +25,11 @@ module:
   quickedit: 0
   rdf: 0
   rest: 0
-  search: 0
   serialization: 0
-  shortcut: 0
   system: 0
   taxonomy: 0
   text: 0
   toolbar: 0
-  tour: 0
   update: 0
   user: 0
   views_ui: 0
@@ -45,6 +38,5 @@ module:
   standard: 1000
 theme:
   classy: 0
-  bartik: 0
   seven: 0
   orkjern_theme: 0

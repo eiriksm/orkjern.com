@@ -1,4 +1,4 @@
-uuid: 60f1b4ea-8769-4713-a802-0211c5e99000
+uuid: 5164d34c-97f8-40e7-b907-7bbda6601bb5
 langcode: en
 status: false
 dependencies:
@@ -12,7 +12,7 @@ label: Archive
 module: node
 description: 'All content, by month.'
 tag: default
-base_table: node
+base_table: node_field_data
 base_field: nid
 core: '8'
 display:
@@ -171,6 +171,12 @@ display:
       relationships: {  }
       fields: {  }
       display_extenders: {  }
+    cache_metadata:
+      contexts:
+        - languages
+        - url
+        - 'user.node_grants:view'
+      cacheable: false
   block_1:
     id: block_1
     display_title: Block
@@ -201,6 +207,12 @@ display:
           plugin_id: date_year_month
           entity_type: node
       display_extenders: {  }
+    cache_metadata:
+      contexts:
+        - languages
+        - url
+        - 'user.node_grants:view'
+      cacheable: false
   page_1:
     id: page_1
     display_title: Page
@@ -212,3 +224,9 @@ display:
         options: {  }
       path: archive
       display_extenders: {  }
+    cache_metadata:
+      contexts:
+        - languages
+        - url
+        - 'user.node_grants:view'
+      cacheable: false

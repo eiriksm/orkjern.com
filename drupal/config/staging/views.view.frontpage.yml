@@ -1,6 +1,6 @@
-uuid: b5d808c7-770f-4ecc-8b02-2f0c5e9346ad
+uuid: 0e448db5-a8ac-48e8-9300-f5422bc8a939
 langcode: en
-status: true
+status: false
 dependencies:
   config:
     - core.entity_view_mode.node.rss
@@ -13,7 +13,7 @@ label: Frontpage
 module: node
 description: 'All content promoted to the front page.'
 tag: default
-base_table: node
+base_table: node_field_data
 base_field: nid
 core: 8.x
 display:
@@ -242,6 +242,11 @@ display:
     display_title: Master
     id: default
     position: 0
+    cache_metadata:
+      contexts:
+        - languages
+        - 'user.node_grants:view'
+      cacheable: false
   feed_1:
     display_plugin: feed
     id: feed_1
@@ -251,8 +256,8 @@ display:
       sitename_title: true
       path: rss.xml
       displays:
-        default: '0'
-        page_1: '0'
+        page_1: page_1
+        default: ''
       pager:
         type: some
         options:
@@ -270,6 +275,11 @@ display:
           relationship: none
           view_mode: rss
       display_extenders: {  }
+    cache_metadata:
+      contexts:
+        - languages
+        - 'user.node_grants:view'
+      cacheable: false
   page_1:
     display_options:
       path: node
@@ -278,3 +288,8 @@ display:
     display_title: Page
     id: page_1
     position: 1
+    cache_metadata:
+      contexts:
+        - languages
+        - 'user.node_grants:view'
+      cacheable: false
