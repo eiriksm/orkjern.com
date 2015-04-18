@@ -1,8 +1,10 @@
 #!/bin/bash
 cd drupal
-drush si --db-url="mysql://$DB_USERNAME@127.0.0.1/$DATABASE"
+php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php si --db-url="mysql://$DB_USERNAME@127.0.0.1/$DATABASE" -y
 drush cset system.site uuid b1a21ab8-84c4-4028-bb09-9f3f9935cb51 -y
 drush pm-uninstall contact -y  
 drush delete-shortcuts
 drush cim staging -y
 drush import-nodes
+drush runserver 127.0.0.1:8080 &
+until netstat -an 2>/dev/null | grep '8080.*LISTEN'; do true; done
