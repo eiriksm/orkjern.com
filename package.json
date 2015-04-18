@@ -1,0 +1,22 @@
+{
+  "name": "orkjern.com",
+  "version": "1.0.0",
+  "description": "orkjern.com ===========",
+  "main": "index.js",
+  "scripts": {
+    "test": "casperjs test tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eiriksm/orkjern.com.git"
+  },
+  "author": "Eirik S. Morland <eirik@morland.no>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eiriksm/orkjern.com/issues"
+  },
+  "homepage": "https://github.com/eiriksm/orkjern.com",
+  "dependencies": {
+    "casperjs": "^1.1.0-beta3"
+  }
+}
