@@ -33,11 +33,11 @@ before_install:
 install:
   - sudo apt-get install -y --force-yes php5-cgi php5-mysql
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - export TEST_URL="http://localhost:8080"
   - composer global require drush/drush:dev-master
 
 before_script:
   - /bin/bash scripts/travis.sh
 
 script:
-  - curl localhost:8080
-  - echo "awesome"
+  - npm test
