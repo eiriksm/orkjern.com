@@ -4,6 +4,9 @@ status: true
 dependencies:
   config:
     - field.storage.node.field_tags
+    - taxonomy.vocabulary.tags
+  content:
+    - 'taxonomy_term:tags:d516ca30-804e-4733-b608-8deeaee227f0'
   module:
     - node
     - rest
@@ -506,6 +509,50 @@ display:
           expose:
             operator: ''
           group: 1
+        field_tags_target_id:
+          id: field_tags_target_id
+          table: node__field_tags
+          field: field_tags_target_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          operator: or
+          value:
+            - 1
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          reduce_duplicates: false
+          type: textfield
+          limit: true
+          vid: tags
+          hierarchy: false
+          error_message: true
+          plugin_id: taxonomy_index_tid
       sorts:
         created:
           id: created
@@ -531,6 +578,7 @@ display:
       display_extenders: {  }
     cache_metadata:
       contexts:
+        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'
@@ -554,6 +602,7 @@ display:
         page_1: '0'
     cache_metadata:
       contexts:
+        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'
@@ -571,13 +620,14 @@ display:
         type: rss
       row:
         type: node_rss
-      path: rss.xml
+      path: planet
       displays:
         default: '0'
         page_1: '0'
       display_description: 'The feed provided to planet Drupal'
     cache_metadata:
       contexts:
+        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'
@@ -592,6 +642,7 @@ display:
       path: node
     cache_metadata:
       contexts:
+        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'
@@ -1057,6 +1108,7 @@ display:
           plugin_id: field
     cache_metadata:
       contexts:
+        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'
