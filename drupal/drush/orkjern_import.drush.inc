@@ -26,7 +26,7 @@ function drush_orkjern_import_delete_shortcuts() {
 }
 
 function drush_orkjern_import_download_nodes() {
-  $url = 'https://orkjern.com';
+  $url = 'http://api.orkjern.com';
   // Try to get a list of all nodes.
   $client = \Drupal::service('http_client');
   $hal_headers = array(
