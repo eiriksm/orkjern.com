@@ -3,6 +3,10 @@
 use Drupal\Core\Language\Language;
 use Drupal\taxonomy\Entity\Vocabulary;
 
+
+/**
+ * Implements hook_drush_commend().
+ */
 function orkjern_import_drush_command() {
   $items = array();
   $items['download-nodes'] = array(
@@ -17,6 +21,9 @@ function orkjern_import_drush_command() {
   return $items;
 }
 
+/**
+ * Command callback to delete shortcuts.
+ */
 function drush_orkjern_import_delete_shortcuts() {
   $rows = db_query('SELECT * FROM {shortcut}');
   foreach ($rows as $row) {
@@ -25,7 +32,11 @@ function drush_orkjern_import_delete_shortcuts() {
   }
 }
 
+/**
+ * Command callback to download nodes from the live site.
+ */
 function drush_orkjern_import_download_nodes() {
+  drush_log('Starting download job', 'success');
   $url = 'http://api.orkjern.com';
   // Try to get a list of all nodes.
   $client = \Drupal::service('http_client');
@@ -41,6 +52,7 @@ function drush_orkjern_import_download_nodes() {
     try {
       $nodes = $response->json();
       file_put_contents('./import/node.json', json_encode($nodes));
+      drush_log('Saved node.json', 'success');
       // So for each one of these, try to create a node.
       foreach ($nodes as $node) {
         // Get full view of this one.
@@ -50,23 +62,31 @@ function drush_orkjern_import_download_nodes() {
         $node_res = $client->send($node_req);
         $c = $node_res->getStatusCode();
         if ($c == 200) {
+          drush_log('Downloaded JSON for ' . $node_url, 'success');
           $json = $node_res->json();
           file_put_contents('./import/' . substr($node['path'], 1) . '.json', json_encode($json));
+        }
+        else {
+          drush_log('Had an error downloading the json for ' . $node_url, 'error');
         }
       }
     }
     catch (Exception $e) {
-      \Drupal::logger('orkjern_import')->notice('Had a horrible problem');
-      \Drupal::logger('orkjern_import')->notice($e->getTraceAsString());
+      drush_log('Had a horrible problem', 'error');
+      drush_log($e->getTraceAsString(), 'error');
     }
   }
   else {
-    \Drupal::logger('orkjern_import')->notice('Could not find any nodes');
+    drush_log('Could not find any nodes', 'error');
   }
 }
 
+/**
+ * Command callback for the importing of the downloaded nodes.
+ */
 function drush_orkjern_import_import_nodes() {
   $url = 'http://api.orkjern.com';
+  drush_log('Starting import of nodes', 'success');
   // Find all terms.
   $has_tags = array();
   $vocabulary = Vocabulary::load('tags');
@@ -84,7 +104,7 @@ function drush_orkjern_import_import_nodes() {
     foreach ($nodes as $node) {
       $node = $node;
       // Get full view of this one.
-      \Drupal::logger('my_module')->notice('Requesting ' . $node_url);
+      drush_log('Importing node with path ' . $node->path, 'success');
       // Assemble a fine piece of node.
       $json = json_decode(file_get_contents('./import/' . substr($node->path, 1) . '.json'));
       $edit = array(
@@ -115,6 +135,7 @@ function drush_orkjern_import_import_nodes() {
           $length = strlen($tag);
           if ($length > 0) {
             if (!$has_tags[$tag]) {
+              drush_log('Creating taxonomy ' . $tag, 'success');
               $t = entity_create('taxonomy_term', array(
                 'name' => $tag,
                 'vid' => 'tags',
@@ -138,6 +159,7 @@ function drush_orkjern_import_import_nodes() {
             // Transfer this please.
             $parts = parse_url($file_url);
             $f = file_get_contents($url . $parts['path']);
+            drush_log('Downloading image ' . $parts['path'], 'success');
             $path_parts = pathinfo($file_url);
             $file_obj = file_save_data($f, 'public://' . $path_parts['basename']);
             $n->get('field_image')->setValue($file_obj->id());
@@ -153,6 +175,7 @@ function drush_orkjern_import_import_nodes() {
       $n = node_load($nid);
       $n->delete();
     }
-    \Drupal::logger('orkjern_import')->error($e->getTraceAsString());
+    drush_log('Had a horrible problem', 'error');
+    drush_log($e->getTraceAsString(), 'error');
   }
 }
