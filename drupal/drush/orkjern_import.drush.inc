@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\Core\Language\Language;
+use Drupal\taxonomy\Entity\Vocabulary;
 
 function orkjern_import_drush_command() {
   $items = array();
@@ -25,7 +26,7 @@ function drush_orkjern_import_delete_shortcuts() {
 }
 
 function drush_orkjern_import_download_nodes() {
-  $url = 'http://orkjern.com';
+  $url = 'http://api.orkjern.com';
   // Try to get a list of all nodes.
   $client = \Drupal::service('http_client');
   $hal_headers = array(
@@ -65,9 +66,18 @@ function drush_orkjern_import_download_nodes() {
 }
 
 function drush_orkjern_import_import_nodes() {
+  $url = 'http://api.orkjern.com';
+  // Find all terms.
+  $has_tags = array();
+  $vocabulary = Vocabulary::load('tags');
+  $terms = \Drupal::entityManager()
+  ->getStorage('taxonomy_term')
+  ->loadTree($vocabulary->id(), 0, NULL, TRUE);
+  foreach ($terms as $term) {
+    $has_tags[$term->label()] = $term->id();
+  }
   $nodes = json_decode(file_get_contents('./import/node.json'));
   $nids = array();
-  $has_tags = array();
   // Looking good.
   try {
     // So for each one of these, try to create a node.
@@ -117,15 +127,21 @@ function drush_orkjern_import_import_nodes() {
         }
       }
       $n->get('field_tags')->setValue($taxs);
-      // Add pictures..
-      if (!empty($json->_links->{'http://orkjern.com/rest/relation/node/article/field_image'})) {
-        foreach ($json->_links->{'http://orkjern.com/rest/relation/node/article/field_image'} as $img) {
-          $file_url = $img->href;
-          // Transfer this please.
-          $f = file_get_contents($file_url);
-          $path_parts = pathinfo($file_url);
-          $file_obj = file_save_data($f, 'public://' . $path_parts['basename']);
-          $n->get('field_image')->setValue($file_obj->id());
+      // Add pictures. In a horrible hacky way.
+      foreach ($json->_links as $key => $relations) {
+        if (!strpos($key, 'field_image')) {
+          continue;
+        }
+        if (!empty($json->_links->{$key})) {
+          foreach ($json->_links->{$key} as $img) {
+            $file_url = $img->href;
+            // Transfer this please.
+            $parts = parse_url($file_url);
+            $f = file_get_contents($url . $parts['path']);
+            $path_parts = pathinfo($file_url);
+            $file_obj = file_save_data($f, 'public://' . $path_parts['basename']);
+            $n->get('field_image')->setValue($file_obj->id());
+          }
         }
       }
       $n->save();

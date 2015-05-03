@@ -1,6 +1,6 @@
 check:
   disabled_extensions: false
-  interval_days: 7
+  interval_days: 1
 fetch:
   url: ''
   max_attempts: 2
@@ -8,4 +8,4 @@ fetch:
 notification:
   emails:
     - orkjern@gmail.com
-  threshold: security
+  threshold: all
