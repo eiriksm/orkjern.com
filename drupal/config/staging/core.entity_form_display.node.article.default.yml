@@ -10,7 +10,6 @@ dependencies:
   module:
     - image
     - path
-    - taxonomy
     - text
 id: node.article.default
 targetEntityType: node
@@ -38,10 +37,13 @@ content:
       preview_image_style: thumbnail
     third_party_settings: {  }
   field_tags:
-    type: taxonomy_autocomplete
-    weight: 3
-    settings: {  }
+    weight: 31
+    settings:
+      match_operator: CONTAINS
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
+    type: entity_reference_autocomplete
   path:
     type: path
     weight: 30

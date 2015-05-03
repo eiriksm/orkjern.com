@@ -578,7 +578,6 @@ display:
       display_extenders: {  }
     cache_metadata:
       contexts:
-        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'
@@ -602,7 +601,6 @@ display:
         page_1: '0'
     cache_metadata:
       contexts:
-        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'
@@ -627,7 +625,6 @@ display:
       display_description: 'The feed provided to planet Drupal'
     cache_metadata:
       contexts:
-        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'
@@ -642,7 +639,6 @@ display:
       path: node
     cache_metadata:
       contexts:
-        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'
@@ -1108,7 +1104,6 @@ display:
           plugin_id: field
     cache_metadata:
       contexts:
-        - cache.context.user
         - languages
         - user
         - 'user.node_grants:view'

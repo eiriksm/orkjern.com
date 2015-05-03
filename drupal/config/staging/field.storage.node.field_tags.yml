@@ -1,27 +1,19 @@
-uuid: 7e61b5ee-ffc1-4aa3-b700-f3053b673e19
+uuid: 14848a81-73b2-4465-9708-8ec9720e49f0
 langcode: en
 status: true
 dependencies:
   module:
+    - entity_reference
     - node
-    - taxonomy
 id: node.field_tags
 field_name: field_tags
 entity_type: node
-type: taxonomy_term_reference
+type: entity_reference
 settings:
-  allowed_values:
-    -
-      vocabulary: tags
-      parent: 0
   target_type: taxonomy_term
-  options_list_callback: null
-  target_bundle: null
-module: taxonomy
+module: entity_reference
 locked: false
 cardinality: -1
 translatable: true
-indexes:
-  target_id:
-    - target_id
+indexes: {  }
 persist_with_no_fields: false
