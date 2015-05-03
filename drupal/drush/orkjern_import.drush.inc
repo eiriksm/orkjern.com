@@ -66,6 +66,7 @@ function drush_orkjern_import_download_nodes() {
 }
 
 function drush_orkjern_import_import_nodes() {
+  $url = 'http://api.orkjern.com';
   // Find all terms.
   $has_tags = array();
   $vocabulary = Vocabulary::load('tags');
@@ -135,7 +136,8 @@ function drush_orkjern_import_import_nodes() {
           foreach ($json->_links->{$key} as $img) {
             $file_url = $img->href;
             // Transfer this please.
-            $f = file_get_contents($file_url);
+            $parts = parse_url($file_url);
+            $f = file_get_contents($url . $parts['path']);
             $path_parts = pathinfo($file_url);
             $file_obj = file_save_data($f, 'public://' . $path_parts['basename']);
             $n->get('field_image')->setValue($file_obj->id());
