@@ -4,7 +4,8 @@ php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php si --db-url="
 drush cset system.site uuid b1a21ab8-84c4-4028-bb09-9f3f9935cb51 -y
 drush pm-uninstall contact -y
 drush delete-shortcuts
-echo "\$config_directories['staging'] = 'config/staging';" | sudo tee -a sites/default/settings.php
+chmod u+w sites/default/settings.php
+echo "\$config_directories['staging'] = 'config/staging';" | tee -a sites/default/settings.php
 drush cim staging -y
 mkdir -p import/node
 drush download-nodes
