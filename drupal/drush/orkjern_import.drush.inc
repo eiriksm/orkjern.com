@@ -2,7 +2,7 @@
 
 use Drupal\Core\Language\Language;
 use Drupal\taxonomy\Entity\Vocabulary;
-
+use GuzzleHttp\ClientInterface;
 
 /**
  * Implements hook_drush_commend().
@@ -40,31 +40,29 @@ function drush_orkjern_import_download_nodes() {
   $url = 'http://api.orkjern.com';
   // Try to get a list of all nodes.
   $client = \Drupal::service('http_client');
-  $hal_headers = array(
-    'headers' => array(
+  $hal_headers = [
+    'headers' => [
       'Accept' => 'application/hal+json',
-    )
-  );
-  $res = $client->createRequest('GET', $url . '/node?json', $hal_headers);
-  $response = $client->send($res);
+    ]
+  ];
+  $response = $client->get($url . '/node?_format=json', $hal_headers);
   $code = $response->getStatusCode();
   if ($code == 200) {
     try {
-      $nodes = $response->json();
+      $nodes = json_decode($response->getBody());
       file_put_contents('./import/node.json', json_encode($nodes));
       drush_log('Saved node.json', 'success');
       // So for each one of these, try to create a node.
       foreach ($nodes as $node) {
         // Get full view of this one.
-        $node_url = $url . $node['path'] . '?json';
+        $node_url = $url . $node->path . '?_format=json';
         \Drupal::logger('orkjern_import')->notice('Requesting ' . $node_url);
-        $node_req = $client->createRequest('GET', $node_url, $hal_headers);
-        $node_res = $client->send($node_req);
+        $node_res = $client->get($node_url, $hal_headers);
         $c = $node_res->getStatusCode();
         if ($c == 200) {
           drush_log('Downloaded JSON for ' . $node_url, 'success');
-          $json = $node_res->json();
-          file_put_contents('./import/' . substr($node['path'], 1) . '.json', json_encode($json));
+          $json = json_decode($node_res->getBody());
+          file_put_contents('./import/' . substr($node->path, 1) . '.json', json_encode($json));
         }
         else {
           drush_log('Had an error downloading the json for ' . $node_url, 'error');
@@ -120,7 +118,7 @@ function drush_orkjern_import_import_nodes() {
       $nid = $n->id();
       $nids[] = $nid;
       // Add path.
-      $n->get('path')->setValue(substr($node->path, 1));
+      $n->get('path')->setValue($node->path);
       // Add taxonomies.
       $n->get('body')->setValue(array(
         'value' => $json->body[0]->value,
@@ -177,5 +175,6 @@ function drush_orkjern_import_import_nodes() {
     }
     drush_log('Had a horrible problem', 'error');
     drush_log($e->getTraceAsString(), 'error');
+    drush_log($e->getMessage(), 'error');
   }
 }
