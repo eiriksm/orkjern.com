@@ -11,4 +11,7 @@ mkdir -p import/node
 drush download-nodes
 drush import-nodes
 drush runserver 127.0.0.1:8080 &
-until netstat -an 2>/dev/null | grep '8080.*LISTEN'; do true; done
+until netstat -an 2>/dev/null | grep '8080.*LISTEN'; do
+  sleep 1;
+  echo "waiting for webserver..."
+  done
