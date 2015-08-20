@@ -533,7 +533,9 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - url.query_args
         - 'user.node_grants:view'
+        - user.permissions
       cacheable: false
   feed_1:
     display_plugin: feed
@@ -557,6 +559,7 @@ display:
         - 'languages:language_content'
         - 'languages:language_interface'
         - 'user.node_grants:view'
+        - user.permissions
       cacheable: false
   feed_2:
     display_plugin: feed
@@ -600,6 +603,7 @@ display:
         - 'languages:language_content'
         - 'languages:language_interface'
         - 'user.node_grants:view'
+        - user.permissions
       cacheable: false
   page_1:
     display_plugin: page
@@ -608,12 +612,14 @@ display:
     position: 1
     display_options:
       display_extenders: {  }
-      path: node
+      path: front
     cache_metadata:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - url.query_args
         - 'user.node_grants:view'
+        - user.permissions
       cacheable: false
   rest_export_1:
     display_plugin: rest_export
@@ -625,6 +631,9 @@ display:
       path: node
       style:
         type: serializer
+        options:
+          formats:
+            hal_json: hal_json
       defaults:
         style: false
         row: false
@@ -1079,5 +1088,7 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - request_format
         - 'user.node_grants:view'
+        - user.permissions
       cacheable: false
