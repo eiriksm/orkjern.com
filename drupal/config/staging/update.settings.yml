@@ -8,4 +8,4 @@ fetch:
 notification:
   emails:
     - orkjern@gmail.com
-  threshold: all
+  threshold: security
