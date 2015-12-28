@@ -5,7 +5,7 @@
 
 (function (Drupal, Backbone) {
 
-  "use strict";
+  'use strict';
 
   Drupal.contextualToolbar.StateModel = Backbone.Model.extend(/** @lends Drupal.contextualToolbar.StateModel# */{
 
@@ -58,6 +58,7 @@
      * @augments Backbone.Model
      *
      * @param {object} attrs
+     *   Attributes for the backbone model.
      * @param {object} options
      *   An object with the following option:
      * @param {Backbone.collection} options.contextualCollection

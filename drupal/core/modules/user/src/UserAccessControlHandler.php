@@ -24,7 +24,7 @@ class UserAccessControlHandler extends EntityAccessControlHandler {
   /**
    * {@inheritdoc}
    */
-  protected function checkAccess(EntityInterface $entity, $operation, $langcode, AccountInterface $account) {
+  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     /** @var \Drupal\user\UserInterface $entity*/
 
     // The anonymous user's profile can neither be viewed, updated nor deleted.
@@ -44,7 +44,7 @@ class UserAccessControlHandler extends EntityAccessControlHandler {
           return AccessResult::allowed()->cachePerPermissions()->cacheUntilEntityChanges($entity);
         }
         // Users can view own profiles at all times.
-        else if ($account->id() == $entity->id()) {
+        elseif ($account->id() == $entity->id()) {
           return AccessResult::allowed()->cachePerUser();
         }
         break;

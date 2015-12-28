@@ -6,8 +6,7 @@
  */
 
 namespace Drupal\test_page_test\Controller;
-
-use Drupal\Component\Utility\SafeMarkup;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Defines a test controller for page titles.
@@ -54,19 +53,13 @@ class Test {
   /**
    * Defines a controller with a cached render array.
    *
-   * @param bool $mark_safe
-   *   Whether or not to mark the title as safe use SafeMarkup::checkPlain.
-   *
    * @return array
    *   A render array
    */
-  public function controllerWithCache($mark_safe = FALSE) {
+  public function controllerWithCache() {
     $build = [];
     $build['#title'] = '<span>Cached title</span>';
-    if ($mark_safe) {
-      $build['#title'] = SafeMarkup::checkPlain($build['#title']);
-    }
-    $build['#cache']['keys'] = ['test_controller', 'with_title', $mark_safe];
+    $build['#cache']['keys'] = ['test_controller', 'with_title'];
 
     return $build;
   }
@@ -81,6 +74,16 @@ class Test {
     return array(
       '#markup' => 'Content',
     );
+  }
+
+  /**
+   * Throws a HTTP exception.
+   *
+   * @param int $code
+   *   The status code.
+   */
+  public function httpResponseException($code) {
+    throw new HttpException($code);
   }
 
 }

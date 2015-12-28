@@ -7,7 +7,6 @@
 
 namespace Drupal\simpletest\Form;
 
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormState;
@@ -74,7 +73,7 @@ class SimpletestResultsForm extends FormBase {
     );
     $image_fail = array(
       '#theme' => 'image',
-      '#uri' => 'core/misc/icons/ea2800/error.svg',
+      '#uri' => 'core/misc/icons/e32700/error.svg',
       '#width' => 18,
       '#height' => 18,
       '#alt' => 'Fail',

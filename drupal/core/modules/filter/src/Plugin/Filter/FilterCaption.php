@@ -8,11 +8,11 @@
 namespace Drupal\filter\Plugin\Filter;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Component\Utility\Xss;
 use Drupal\filter\FilterProcessResult;
 use Drupal\filter\Plugin\FilterBase;
+use Drupal\filter\Render\FilteredMarkup;
 
 /**
  * Provides a filter to caption elements.
@@ -39,13 +39,13 @@ class FilterCaption extends FilterBase {
       $xpath = new \DOMXPath($dom);
       foreach ($xpath->query('//*[@data-caption]') as $node) {
         // Read the data-caption attribute's value, then delete it.
-        $caption = SafeMarkup::checkPlain($node->getAttribute('data-caption'));
+        $caption = Html::escape($node->getAttribute('data-caption'));
         $node->removeAttribute('data-caption');
 
         // Sanitize caption: decode HTML encoding, limit allowed HTML tags; only
         // allow inline tags that are allowed by default, plus <br>.
         $caption = Html::decodeEntities($caption);
-        $caption = SafeMarkup::xssFilter($caption, array('a', 'em', 'strong', 'cite', 'code', 'br'));
+        $caption = FilteredMarkup::create(Xss::filter($caption, array('a', 'em', 'strong', 'cite', 'code', 'br')));
 
         // The caption must be non-empty.
         if (Unicode::strlen($caption) === 0) {
@@ -55,12 +55,17 @@ class FilterCaption extends FilterBase {
         // Given the updated node and caption: re-render it with a caption, but
         // bubble up the value of the class attribute of the captioned element,
         // this allows it to collaborate with e.g. the filter_align filter.
+        $tag = $node->tagName;
         $classes = $node->getAttribute('class');
         $node->removeAttribute('class');
+        $node = ($node->parentNode->tagName === 'a') ? $node->parentNode : $node;
         $filter_caption = array(
           '#theme' => 'filter_caption',
-          '#node' => SafeMarkup::set($node->C14N()),
-          '#tag' => $node->tagName,
+          // We pass the unsanitized string because this is a text format
+          // filter, and after filtering, we always assume the output is safe.
+          // @see \Drupal\filter\Element\ProcessedText::preRenderText()
+          '#node' => FilteredMarkup::create($node->C14N()),
+          '#tag' => $tag,
           '#caption' => $caption,
           '#classes' => $classes,
         );
@@ -75,7 +80,7 @@ class FilterCaption extends FilterBase {
         // Import the updated node from the new DOMDocument into the original
         // one, importing also the child nodes of the updated node.
         $updated_node = $dom->importNode($updated_node, TRUE);
-        // Finally, replace the original image node with the new image node!
+        // Finally, replace the original node with the new node.
         $node->parentNode->replaceChild($updated_node, $node);
       }
 

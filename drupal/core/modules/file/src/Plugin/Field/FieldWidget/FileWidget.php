@@ -7,9 +7,9 @@
 
 namespace Drupal\file\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\WidgetBase;
@@ -17,10 +17,10 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Render\ElementInfoManagerInterface;
-use Drupal\Core\Url;
 use Drupal\file\Element\ManagedFile;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\file\Entity\File;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 /**
  * Plugin implementation of the 'file_generic' widget.
@@ -118,8 +118,8 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
         break;
     }
 
-    $title = SafeMarkup::checkPlain($this->fieldDefinition->getLabel());
-    $description = $this->fieldFilterXss($this->fieldDefinition->getDescription());
+    $title = $this->fieldDefinition->getLabel();
+    $description = FieldFilteredMarkup::create($this->fieldDefinition->getDescription());
 
     $elements = array();
 
@@ -370,8 +370,6 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
     $item = $element['#value'];
     $item['fids'] = $element['fids']['#value'];
 
-    $element['#theme'] = 'file_widget';
-
     // Add the display field if enabled.
     if ($element['#display_field']) {
       $element['display'] = array(
@@ -571,6 +569,17 @@ class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
     $field_state = static::getWidgetState($parents, $field_name, $form_state);
     $field_state['items'] = $submitted_values;
     static::setWidgetState($parents, $field_name, $form_state, $field_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function flagErrors(FieldItemListInterface $items, ConstraintViolationListInterface $violations, array $form, FormStateInterface $form_state) {
+    // Never flag validation errors for the remove button.
+    $clicked_button = end($form_state->getTriggeringElement()['#parents']);
+    if ($clicked_button !== 'remove_button') {
+      parent::flagErrors($items, $violations, $form, $form_state);
+    }
   }
 
 }

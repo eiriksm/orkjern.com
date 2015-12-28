@@ -160,6 +160,17 @@ field.widget.settings.string_textarea:
       type: label
       label: 'Placeholder'
 
+field.widget.settings.uri:
+  type: mapping
+  label: 'URI field'
+  mapping:
+    size:
+      type: integer
+      label: 'Size of URI field'
+    placeholder:
+      type: label
+      label: 'Placeholder'
+
 field.widget.settings.email_default:
   type: mapping
   label: 'Email field display format settings'
@@ -227,19 +238,6 @@ field.widget.settings.entity_reference_autocomplete:
     placeholder:
       type: label
       label: 'Placeholder'
-
-field.formatter.settings.boolean:
-  type: mapping
-  mapping:
-    format:
-      type: string
-      label: 'Output format'
-    format_custom_false:
-      type: string
-      label: 'Custom output for FALSE'
-    format_custom_true:
-      type: string
-      label: 'Custom output for TRUE'
 
 field.formatter.settings.boolean:
   type: mapping

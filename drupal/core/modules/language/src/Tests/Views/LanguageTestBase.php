@@ -8,12 +8,12 @@
 namespace Drupal\language\Tests\Views;
 
 use Drupal\language\Entity\ConfigurableLanguage;
-use Drupal\views\Tests\ViewUnitTestBase;
+use Drupal\views\Tests\ViewKernelTestBase;
 
 /**
  * Defines the base class for all Language handler tests.
  */
-abstract class LanguageTestBase extends ViewUnitTestBase {
+abstract class LanguageTestBase extends ViewKernelTestBase {
 
   /**
    * Modules to enable.
@@ -31,7 +31,7 @@ abstract class LanguageTestBase extends ViewUnitTestBase {
   }
 
   /**
-   * Overrides \Drupal\views\Tests\ViewTestBase::schemaDefinition().
+   * {@inheritdoc}
    */
   protected function schemaDefinition() {
     $schema = parent::schemaDefinition();
@@ -46,7 +46,7 @@ abstract class LanguageTestBase extends ViewUnitTestBase {
   }
 
   /**
-   * Overrides \Drupal\views\Tests\ViewTestBase::schemaDefinition().
+   * {@inheritdoc}
    */
   protected function viewsData() {
     $data = parent::viewsData();
@@ -68,7 +68,7 @@ abstract class LanguageTestBase extends ViewUnitTestBase {
   }
 
   /**
-   * Overrides \Drupal\views\Tests\ViewTestBase::dataSet().
+   * {@inheritdoc}
    */
   protected function dataSet() {
     $data = parent::dataSet();

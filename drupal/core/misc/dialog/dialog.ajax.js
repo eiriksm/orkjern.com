@@ -5,7 +5,7 @@
 
 (function ($, Drupal) {
 
-  "use strict";
+  'use strict';
 
   /**
    * Initialize dialogs for Ajax purposes.
@@ -74,9 +74,9 @@
           border: 0
         });
         buttons.push({
-          'text': $originalButton.html() || $originalButton.attr('value'),
-          'class': $originalButton.attr('class'),
-          'click': function (e) {
+          text: $originalButton.html() || $originalButton.attr('value'),
+          class: $originalButton.attr('class'),
+          click: function (e) {
             $originalButton.trigger('mousedown').trigger('mouseup').trigger('click');
             e.preventDefault();
           }

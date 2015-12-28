@@ -7,18 +7,18 @@
 
 namespace Drupal\views\Tests\Plugin;
 
-use Drupal\views\Tests\ViewUnitTestBase;
+use Drupal\views\Tests\ViewKernelTestBase;
 use Masterminds\HTML5;
 
 /**
  * Tests some general style plugin related functionality.
  */
-abstract class StyleTestBase extends ViewUnitTestBase {
+abstract class StyleTestBase extends ViewKernelTestBase {
 
   /**
    * Stores the SimpleXML representation of the output.
    *
-   * @var SimpleXMLElement
+   * @var \SimpleXMLElement
    */
   protected $elements;
 
