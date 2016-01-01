@@ -37,6 +37,7 @@ module:
   views: 10
   standard: 1000
 theme:
-  classy: 0
-  seven: 0
-  orkjern_theme: 0
+  stable: 1
+  classy: 1
+  seven: 1
+  orkjern_theme: 1
