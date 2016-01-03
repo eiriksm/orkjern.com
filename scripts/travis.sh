@@ -1,6 +1,6 @@
 #!/bin/bash
 cd drupal
-php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php si --db-url="mysql://$DB_USERNAME@127.0.0.1/$DATABASE" --keep-config -y
+php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php si --db-url="mysql://$DB_USERNAME@127.0.0.1/$DATABASE" -y
 drush cset system.site uuid b1a21ab8-84c4-4028-bb09-9f3f9935cb51 -y
 drush pm-uninstall contact -y
 drush delete-shortcuts

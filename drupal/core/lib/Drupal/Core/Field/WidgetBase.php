@@ -10,7 +10,6 @@ namespace Drupal\Core\Field;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Component\Utility\SortArray;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Symfony\Component\Validator\ConstraintViolationInterface;
@@ -85,8 +84,8 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
     if ($this->handlesMultipleValues() || isset($get_delta)) {
       $delta = isset($get_delta) ? $get_delta : 0;
       $element = array(
-        '#title' => SafeMarkup::checkPlain($this->fieldDefinition->getLabel()),
-        '#description' => $this->fieldFilterXss(\Drupal::token()->replace($this->fieldDefinition->getDescription())),
+        '#title' => $this->fieldDefinition->getLabel(),
+        '#description' => FieldFilteredMarkup::create(\Drupal::token()->replace($this->fieldDefinition->getDescription())),
       );
       $element = $this->formSingleElement($items, $delta, $element, $form, $form_state);
 
@@ -128,9 +127,9 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
       '#parents' => array_merge($parents, array($field_name . '_wrapper')),
       '#attributes' => array(
         'class' => array(
-          'field-type-' . Html::getClass($this->fieldDefinition->getType()),
-          'field-name-' . Html::getClass($field_name),
-          'field-widget-' . Html::getClass($this->getPluginId()),
+          'field--type-' . Html::getClass($this->fieldDefinition->getType()),
+          'field--name-' . Html::getClass($field_name),
+          'field--widget-' . Html::getClass($this->getPluginId()),
         ),
       ),
       'widget' => $elements,
@@ -164,8 +163,8 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
         break;
     }
 
-    $title = SafeMarkup::checkPlain($this->fieldDefinition->getLabel());
-    $description = $this->fieldFilterXss(\Drupal::token()->replace($this->fieldDefinition->getDescription()));
+    $title = $this->fieldDefinition->getLabel();
+    $description = FieldFilteredMarkup::create(\Drupal::token()->replace($this->fieldDefinition->getDescription()));
 
     $elements = array();
 
@@ -179,7 +178,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
       // table.
       if ($is_multiple) {
         $element = [
-          '#title' => $title . ' ' . $this->t('(value @number)', ['@number' => $delta + 1]),
+          '#title' => $this->t('@title (value @number)', ['@title' => $title, '@number' => $delta + 1]),
           '#title_display' => 'invisible',
           '#description' => '',
         ];
@@ -398,8 +397,6 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
     $field_state = static::getWidgetState($form['#parents'], $field_name, $form_state);
 
     if ($violations->count()) {
-      $form_builder = \Drupal::formBuilder();
-
       // Locate the correct element in the form.
       $element = NestedArray::getValue($form_state->getCompleteForm(), $field_state['array_parents']);
 

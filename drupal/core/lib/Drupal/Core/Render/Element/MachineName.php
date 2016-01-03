@@ -104,6 +104,11 @@ class MachineName extends Textfield {
    * {@inheritdoc}
    */
   public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+    if ($input !== FALSE && $input !== NULL) {
+      // This should be a string, but allow other scalars since they might be
+      // valid input in programmatic form submissions.
+      return is_scalar($input) ? (string) $input : '';
+    }
     return NULL;
   }
 
@@ -135,7 +140,7 @@ class MachineName extends Textfield {
     );
     // A form element that only wants to set one #machine_name property (usually
     // 'source' only) would leave all other properties undefined, if the defaults
-    // were defined in hook_element_info(). Therefore, we apply the defaults here.
+    // were defined by an element plugin. Therefore, we apply the defaults here.
     $element['#machine_name'] += array(
       'source' => array('label'),
       'target' => '#' . $element['#id'],
@@ -185,7 +190,17 @@ class MachineName extends Textfield {
     }
 
     $element['#attached']['library'][] = 'core/drupal.machine-name';
-    $element['#attached']['drupalSettings']['machineName']['#' . $source['#id']] = $element['#machine_name'];
+    $options = [
+      'replace_pattern',
+      'replace',
+      'maxlength',
+      'target',
+      'label',
+      'field_prefix',
+      'field_suffix',
+      'suffix',
+    ];
+    $element['#attached']['drupalSettings']['machineName']['#' . $source['#id']] = array_intersect_key($element['#machine_name'], array_flip($options));
     $element['#attached']['drupalSettings']['langcode'] = $language->getId();
 
     return $element;

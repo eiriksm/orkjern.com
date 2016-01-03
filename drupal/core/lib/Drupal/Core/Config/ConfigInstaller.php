@@ -10,7 +10,6 @@ namespace Drupal\Core\Config;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Config\Entity\ConfigDependencyManager;
 use Drupal\Core\Config\Entity\ConfigEntityDependency;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Site\Settings;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -113,13 +112,13 @@ class ConfigInstaller implements ConfigInstallerInterface {
         $prefix = $name . '.';
       }
 
-      // Gets a profile storage to search for overrides if necessary.
-      $profile_storage = $this->getProfileStorage($name);
+      // Gets profile storages to search for overrides if necessary.
+      $profile_storages = $this->getProfileStorages($name);
 
       // Gather information about all the supported collections.
       $collection_info = $this->configManager->getConfigCollectionInfo();
       foreach ($collection_info->getCollectionNames() as $collection) {
-        $config_to_create = $this->getConfigToCreate($storage, $collection, $prefix, $profile_storage);
+        $config_to_create = $this->getConfigToCreate($storage, $collection, $prefix, $profile_storages);
         // If we're installing a profile ensure configuration that is overriding
         // is excluded.
         if ($name == $this->drupalGetProfile()) {
@@ -158,6 +157,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
    */
   public function installOptionalConfig(StorageInterface $storage = NULL, $dependency = []) {
     $profile = $this->drupalGetProfile();
+    $optional_profile_config = [];
     if (!$storage) {
       // Search the install profile's optional configuration too.
       $storage = new ExtensionInstallStorage($this->getActiveStorages(StorageInterface::DEFAULT_COLLECTION), InstallStorage::CONFIG_OPTIONAL_DIRECTORY, StorageInterface::DEFAULT_COLLECTION, TRUE);
@@ -168,6 +168,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
       // Creates a profile storage to search for overrides.
       $profile_install_path = $this->drupalGetPath('module', $profile) . '/' . InstallStorage::CONFIG_OPTIONAL_DIRECTORY;
       $profile_storage = new FileStorage($profile_install_path, StorageInterface::DEFAULT_COLLECTION);
+      $optional_profile_config = $profile_storage->listAll();
     }
     else {
       // Profile has not been set yet. For example during the first steps of the
@@ -178,7 +179,8 @@ class ConfigInstaller implements ConfigInstallerInterface {
     $enabled_extensions = $this->getEnabledExtensions();
     $existing_config = $this->getActiveStorages()->listAll();
 
-    $list = array_filter($storage->listAll(), function($config_name) use ($existing_config) {
+    $list = array_unique(array_merge($storage->listAll(), $optional_profile_config));
+    $list = array_filter($list, function($config_name) use ($existing_config) {
       // Only list configuration that:
       // - does not already exist
       // - is a configuration entity (this also excludes config that has an
@@ -188,7 +190,8 @@ class ConfigInstaller implements ConfigInstallerInterface {
 
     $all_config = array_merge($existing_config, $list);
     $config_to_create = $storage->readMultiple($list);
-    // Check to see if the corresponding override storage has any overrides.
+    // Check to see if the corresponding override storage has any overrides or
+    // new configuration that can be installed.
     if ($profile_storage) {
       $config_to_create = $profile_storage->readMultiple($list) + $config_to_create;
     }
@@ -220,19 +223,22 @@ class ConfigInstaller implements ConfigInstallerInterface {
    *  The configuration collection to use.
    * @param string $prefix
    *   (optional) Limit to configuration starting with the provided string.
+   * @param \Drupal\Core\Config\StorageInterface[] $profile_storages
+   *   An array of storage interfaces containing profile configuration to check
+   *   for overrides.
    *
    * @return array
    *   An array of configuration data read from the source storage keyed by the
    *   configuration object name.
    */
-  protected function getConfigToCreate(StorageInterface $storage, $collection, $prefix = '', StorageInterface $profile_storage = NULL) {
+  protected function getConfigToCreate(StorageInterface $storage, $collection, $prefix = '', array $profile_storages = []) {
     if ($storage->getCollectionName() != $collection) {
       $storage = $storage->createCollection($collection);
     }
     $data = $storage->readMultiple($storage->listAll($prefix));
 
     // Check to see if the corresponding override storage has any overrides.
-    if ($profile_storage) {
+    foreach ($profile_storages as $profile_storage) {
       if ($profile_storage->getCollectionName() != $collection) {
         $profile_storage = $profile_storage->createCollection($collection);
       }
@@ -432,11 +438,11 @@ class ConfigInstaller implements ConfigInstallerInterface {
     $enabled_extensions = $this->getEnabledExtensions();
     // Add the extension that will be enabled to the list of enabled extensions.
     $enabled_extensions[] = $name;
-    // Gets a profile storage to search for overrides if necessary.
-    $profile_storage = $this->getProfileStorage($name);
+    // Gets profile storages to search for overrides if necessary.
+    $profile_storages = $this->getProfileStorages($name);
 
     // Check the dependencies of configuration provided by the module.
-    $invalid_default_config = $this->findDefaultConfigWithUnmetDependencies($storage, $enabled_extensions, $profile_storage);
+    $invalid_default_config = $this->findDefaultConfigWithUnmetDependencies($storage, $enabled_extensions, $profile_storages);
     if (!empty($invalid_default_config)) {
       throw UnmetDependenciesException::create($name, $invalid_default_config);
     }
@@ -457,14 +463,19 @@ class ConfigInstaller implements ConfigInstallerInterface {
   /**
    * Finds default configuration with unmet dependencies.
    *
+   * @param \Drupal\Core\Config\StorageInterface $storage
+   *   The storage containing the default configuration.
    * @param array $enabled_extensions
    *   A list of all the currently enabled modules and themes.
+   * @param \Drupal\Core\Config\StorageInterface[] $profile_storages
+   *   An array of storage interfaces containing profile configuration to check
+   *   for overrides.
    *
    * @return array
    *   List of configuration that has unmet dependencies
    */
-  protected function findDefaultConfigWithUnmetDependencies(StorageInterface $storage, array $enabled_extensions, StorageInterface $profile_storage = NULL) {
-    $config_to_create = $this->getConfigToCreate($storage, StorageInterface::DEFAULT_COLLECTION, '', $profile_storage);
+  protected function findDefaultConfigWithUnmetDependencies(StorageInterface $storage, array $enabled_extensions, array $profile_storages = []) {
+    $config_to_create = $this->getConfigToCreate($storage, StorageInterface::DEFAULT_COLLECTION, '', $profile_storages);
     $all_config = array_merge($this->configFactory->listAll(), array_keys($config_to_create));
     return array_filter(array_keys($config_to_create), function($config_name) use ($enabled_extensions, $all_config, $config_to_create) {
       return !$this->validateDependencies($config_name, $config_to_create[$config_name], $enabled_extensions, $all_config);
@@ -547,27 +558,31 @@ class ConfigInstaller implements ConfigInstallerInterface {
   /**
    * Gets the profile storage to use to check for profile overrides.
    *
+   * The install profile can override module configuration during a module
+   * install. Both the install and optional directories are checked for matching
+   * configuration. This allows profiles to override default configuration for
+   * modules they do not depend on.
+   *
    * @param string $installing_name
    *   (optional) The name of the extension currently being installed.
    *
-   * @return \Drupal\Core\Config\StorageInterface|null
-   *   A storage to access configuration from the installation profile. If a
-   *   Drupal installation is not in progress or we're installing the profile
-   *   itself, then it will return NULL as the profile storage should not be
-   *   used.
+   * @return \Drupal\Core\Config\StorageInterface[]|null
+   *   Storages to access configuration from the installation profile. If we're
+   *   installing the profile itself, then it will return an empty array as the
+   *   profile storage should not be used.
    */
-  protected function getProfileStorage($installing_name = '') {
+  protected function getProfileStorages($installing_name = '') {
     $profile = $this->drupalGetProfile();
-    if ($this->drupalInstallationAttempted() && $profile != $installing_name) {
-      // Profiles should not contain optional configuration so always use the
-      // install directory.
-      $profile_install_path = $this->getDefaultConfigDirectory('module', $profile);
-      $profile_storage = new FileStorage($profile_install_path, StorageInterface::DEFAULT_COLLECTION);
+    $profile_storages = [];
+    if ($profile && $profile != $installing_name) {
+      $profile_path = $this->drupalGetPath('module', $profile);
+      foreach ([InstallStorage::CONFIG_INSTALL_DIRECTORY, InstallStorage::CONFIG_OPTIONAL_DIRECTORY] as $directory) {
+        if (is_dir($profile_path . '/' . $directory)) {
+          $profile_storages[] = new FileStorage($profile_path . '/' . $directory, StorageInterface::DEFAULT_COLLECTION);
+        }
+      }
     }
-    else {
-      $profile_storage = NULL;
-    }
-    return $profile_storage;
+    return $profile_storages;
   }
 
   /**

@@ -5,12 +5,15 @@
 
 (function ($, Drupal, drupalSettings, Backbone) {
 
-  "use strict";
+  'use strict';
 
   Drupal.toolbar.ToolbarVisualView = Backbone.View.extend(/** @lends Drupal.toolbar.ToolbarVisualView# */{
 
     /**
+     * Event map for the `ToolbarVisualView`.
+     *
      * @return {object}
+     *   A map of events.
      */
     events: function () {
       // Prevents delay and simulated mouse events.
@@ -35,7 +38,9 @@
      * @augments Backbone.View
      *
      * @param {object} options
+     *   Options for the view object.
      * @param {object} options.strings
+     *   Various strings to use in the view.
      */
     initialize: function (options) {
       this.strings = options.strings;
@@ -58,6 +63,7 @@
      * @inheritdoc
      *
      * @return {Drupal.toolbar.ToolbarVisualView}
+     *   The `ToolbarVisualView` instance.
      */
     render: function () {
       this.updateTabs();
@@ -91,6 +97,7 @@
      * Responds to a toolbar tab click.
      *
      * @param {jQuery.Event} event
+     *   The event triggered.
      */
     onTabClick: function (event) {
       // If this tab has a tray associated with it, it is considered an
@@ -111,12 +118,13 @@
      * Toggles the orientation of a toolbar tray.
      *
      * @param {jQuery.Event} event
+     *   The event triggered.
      */
     onOrientationToggleClick: function (event) {
       var orientation = this.model.get('orientation');
       // Determine the toggle-to orientation.
       var antiOrientation = (orientation === 'vertical') ? 'horizontal' : 'vertical';
-      var locked = (antiOrientation === 'vertical') ? true : false;
+      var locked = antiOrientation === 'vertical';
       // Remember the locked state.
       if (locked) {
         localStorage.setItem('Drupal.toolbar.trayVerticalLocked', 'true');
@@ -238,13 +246,13 @@
     adjustPlacement: function () {
       var $trays = this.$el.find('.toolbar-tray');
       if (!this.model.get('isOriented')) {
-        $trays.css('padding-top', 0);
+        $trays.css('margin-top', 0);
         $trays.removeClass('toolbar-tray-horizontal').addClass('toolbar-tray-vertical');
       }
       else {
         // The toolbar container is invisible. Its placement is used to
         // determine the container for the trays.
-        $trays.css('padding-top', this.$el.find('.toolbar-bar').outerHeight());
+        $trays.css('margin-top', this.$el.find('.toolbar-bar').outerHeight());
       }
     },
 

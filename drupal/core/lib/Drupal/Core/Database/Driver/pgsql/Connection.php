@@ -10,15 +10,15 @@ namespace Drupal\Core\Database\Driver\pgsql;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Connection as DatabaseConnection;
 use Drupal\Core\Database\DatabaseNotFoundException;
-use Drupal\Core\Database\StatementInterface;
-use Drupal\Core\Database\IntegrityConstraintViolationException;
-use Drupal\Core\Database\DatabaseExceptionWrapper;
 
 /**
  * @addtogroup database
  * @{
  */
 
+/**
+ * PostgreSQL implementation of \Drupal\Core\Database\Connection.
+ */
 class Connection extends DatabaseConnection {
 
   /**
@@ -383,6 +383,22 @@ class Connection extends DatabaseConnection {
       $this->rollback($savepoint_name);
     }
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function upsert($table, array $options = array()) {
+    // Use the (faster) native Upsert implementation for PostgreSQL >= 9.5.
+    if (version_compare($this->version(), '9.5', '>=')) {
+      $class = $this->getDriverClass('NativeUpsert');
+    }
+    else {
+      $class = $this->getDriverClass('Upsert');
+    }
+
+    return new $class($this, $table, $options);
+  }
+
 }
 
 /**

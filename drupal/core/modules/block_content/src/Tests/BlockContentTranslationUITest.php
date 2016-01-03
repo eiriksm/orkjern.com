@@ -31,13 +31,28 @@ class BlockContentTranslationUITest extends ContentTranslationUITestBase {
   );
 
   /**
-   * Overrides \Drupal\simpletest\WebTestBase::setUp().
+   * {@inheritdoc}
+   */
+  protected $defaultCacheContexts = [
+    'languages:language_interface',
+    'session',
+    'theme',
+    'url.path',
+    'url.query_args',
+    'user.permissions',
+    'user.roles:authenticated',
+  ];
+
+  /**
+   * {@inheritdoc}
    */
   protected function setUp() {
     $this->entityTypeId = 'block_content';
     $this->bundle = 'basic';
     $this->testLanguageSelector = FALSE;
     parent::setUp();
+
+    $this->drupalPlaceBlock('page_title_block');
   }
 
   /**
@@ -54,7 +69,7 @@ class BlockContentTranslationUITest extends ContentTranslationUITestBase {
   }
 
   /**
-   * Overrides \Drupal\content_translation\Tests\ContentTranslationUITestBase::getTranslatorPermission().
+   * {@inheritdoc}
    */
   public function getTranslatorPermissions() {
     return array_merge(parent::getTranslatorPermissions(), array(
@@ -68,10 +83,10 @@ class BlockContentTranslationUITest extends ContentTranslationUITestBase {
   /**
    * Creates a custom block.
    *
-   * @param string $title
+   * @param bool|string $title
    *   (optional) Title of block. When no value is given uses a random name.
    *   Defaults to FALSE.
-   * @param string $bundle
+   * @param bool|string $bundle
    *   (optional) Bundle name. When no value is given, defaults to
    *   $this->bundle. Defaults to FALSE.
    *
@@ -91,7 +106,7 @@ class BlockContentTranslationUITest extends ContentTranslationUITestBase {
   }
 
   /**
-   * Overrides \Drupal\content_translation\Tests\ContentTranslationUITestBase::getNewEntityValues().
+   * {@inheritdoc}
    */
   protected function getNewEntityValues($langcode) {
     return array('info' => Unicode::strtolower($this->randomMachineName())) + parent::getNewEntityValues($langcode);

@@ -148,6 +148,16 @@ class AjaxResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
     $css_assets = $this->assetResolver->getCssAssets($assets, $optimize_css);
     list($js_assets_header, $js_assets_footer) = $this->assetResolver->getJsAssets($assets, $optimize_js);
 
+    // First, AttachedAssets::setLibraries() ensures duplicate libraries are
+    // removed: it converts it to a set of libraries if necessary. Second,
+    // AssetResolver::getJsSettings() ensures $assets contains the final set of
+    // JavaScript settings. AttachmentsResponseProcessorInterface also mandates
+    // that the response it processes contains the final attachment values, so
+    // update both the 'library' and 'drupalSettings' attachments accordingly.
+    $attachments['library'] = $assets->getLibraries();
+    $attachments['drupalSettings'] = $assets->getSettings();
+    $response->setAttachments($attachments);
+
     // Render the HTML to load these files, and add AJAX commands to insert this
     // HTML in the page. Settings are handled separately, afterwards.
     $settings = [];
@@ -164,15 +174,15 @@ class AjaxResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
     $resource_commands = array();
     if ($css_assets) {
       $css_render_array = $this->cssCollectionRenderer->render($css_assets);
-      $resource_commands[] = new AddCssCommand((string) $this->renderer->renderPlain($css_render_array));
+      $resource_commands[] = new AddCssCommand($this->renderer->renderPlain($css_render_array));
     }
     if ($js_assets_header) {
       $js_header_render_array = $this->jsCollectionRenderer->render($js_assets_header);
-      $resource_commands[] = new PrependCommand('head', (string) $this->renderer->renderPlain($js_header_render_array));
+      $resource_commands[] = new PrependCommand('head', $this->renderer->renderPlain($js_header_render_array));
     }
     if ($js_assets_footer) {
       $js_footer_render_array = $this->jsCollectionRenderer->render($js_assets_footer);
-      $resource_commands[] = new AppendCommand('body', (string) $this->renderer->renderPlain($js_footer_render_array));
+      $resource_commands[] = new AppendCommand('body', $this->renderer->renderPlain($js_footer_render_array));
     }
     foreach (array_reverse($resource_commands) as $resource_command) {
       $response->addCommand($resource_command, TRUE);

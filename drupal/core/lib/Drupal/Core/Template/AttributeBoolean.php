@@ -7,6 +7,8 @@
 
 namespace Drupal\Core\Template;
 
+use Drupal\Component\Utility\Html;
+
 /**
  * A class that defines a type of boolean HTML attribute.
  *
@@ -30,7 +32,7 @@ namespace Drupal\Core\Template;
 class AttributeBoolean extends AttributeValueBase {
 
   /**
-   * Overrides AttributeValueBase::render().
+   * {@inheritdoc}
    */
   public function render() {
     return $this->__toString();
@@ -40,7 +42,7 @@ class AttributeBoolean extends AttributeValueBase {
    * Implements the magic __toString() method.
    */
   public function __toString() {
-    return $this->value === FALSE ? '' : htmlspecialchars($this->name, ENT_QUOTES, 'UTF-8');
+    return $this->value === FALSE ? '' : Html::escape($this->name);
   }
 
 }

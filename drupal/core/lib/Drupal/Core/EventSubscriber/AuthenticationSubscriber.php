@@ -98,7 +98,7 @@ class AuthenticationSubscriber implements EventSubscriberInterface {
     if (isset($this->filter) && $event->getRequestType() === HttpKernelInterface::MASTER_REQUEST) {
       $request = $event->getRequest();
       if ($this->authenticationProvider->applies($request) && !$this->filter->appliesToRoutedRequest($request, TRUE)) {
-        //throw new AccessDeniedHttpException();
+        throw new AccessDeniedHttpException();
       }
     }
   }

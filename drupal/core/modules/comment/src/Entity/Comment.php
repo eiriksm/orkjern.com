@@ -8,6 +8,7 @@
 namespace Drupal\comment\Entity;
 
 use Drupal\Component\Utility\Number;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\comment\CommentInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -29,6 +30,7 @@ use Drupal\user\UserInterface;
  *     "storage" = "Drupal\comment\CommentStorage",
  *     "storage_schema" = "Drupal\comment\CommentStorageSchema",
  *     "access" = "Drupal\comment\CommentAccessControlHandler",
+ *     "list_builder" = "Drupal\Core\Entity\EntityListBuilder",
  *     "view_builder" = "Drupal\comment\CommentViewBuilder",
  *     "views_data" = "Drupal\comment\CommentViewsData",
  *     "form" = {
@@ -152,6 +154,11 @@ class Comment extends ContentEntityBase implements CommentInterface {
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
+
+    // Always invalidate the cache tag for the commented entity.
+    if ($commented_entity = $this->getCommentedEntity()) {
+      Cache::invalidateTags($commented_entity->getCacheTagsToInvalidate());
+    }
 
     $this->releaseThreadLock();
     // Update the {comment_entity_statistics} table prior to executing the hook.
@@ -519,13 +526,6 @@ class Comment extends ContentEntityBase implements CommentInterface {
   public function setThread($thread) {
     $this->set('thread', $thread);
     return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getChangedTime() {
-    return $this->get('changed')->value;
   }
 
   /**

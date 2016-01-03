@@ -14,7 +14,6 @@ use Drupal\Core\Path\AliasManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
 use Drupal\Core\Path\PathMatcherInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -164,9 +163,7 @@ class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginI
    */
   public function getCacheContexts() {
     $contexts = parent::getCacheContexts();
-    // @todo Add a url.path cache context in
-    //   https://www.drupal.org/node/2521978.
-    $contexts[] = 'url';
+    $contexts[] = 'url.path';
     return $contexts;
   }
 

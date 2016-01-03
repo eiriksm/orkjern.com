@@ -43,6 +43,11 @@ class CreateNew extends GDImageToolkitOperationBase {
         'required' => FALSE,
         'default' => '#ffffff',
       ),
+      'is_temp' => array(
+        'description' => 'If TRUE, this operation is being used to create a temporary image by another GD operation. After performing its function, the caller is responsible for destroying the original GD resource.',
+        'required' => FALSE,
+        'default' => FALSE,
+      ),
     );
   }
 
@@ -82,6 +87,9 @@ class CreateNew extends GDImageToolkitOperationBase {
     // Get the image type.
     $type = $this->getToolkit()->extensionToImageType($arguments['extension']);
 
+    // Store the original GD resource.
+    $original_res = $this->getToolkit()->getResource();
+
     // Create the resource.
     if (!$res = imagecreatetruecolor($arguments['width'], $arguments['height'])) {
       return FALSE;
@@ -99,12 +107,12 @@ class CreateNew extends GDImageToolkitOperationBase {
 
       case IMAGETYPE_GIF:
         if (empty($arguments['transparent_color'])) {
-          // No transparency color specified, fill white.
-          $fill_color = imagecolorallocate($res, 255, 255, 255);
+          // No transparency color specified, fill white transparent.
+          $fill_color = imagecolorallocatealpha($res, 255, 255, 255, 127);
         }
         else {
           $fill_rgb = Color::hexToRgb($arguments['transparent_color']);
-          $fill_color = imagecolorallocate($res, $fill_rgb['red'], $fill_rgb['green'], $fill_rgb['blue']);
+          $fill_color = imagecolorallocatealpha($res, $fill_rgb['red'], $fill_rgb['green'], $fill_rgb['blue'], 127);
           imagecolortransparent($res, $fill_color);
         }
         imagefill($res, 0, 0, $fill_color);
@@ -119,6 +127,12 @@ class CreateNew extends GDImageToolkitOperationBase {
     // Update the toolkit properties.
     $this->getToolkit()->setType($type);
     $this->getToolkit()->setResource($res);
+
+    // Destroy the original resource if it is not needed by other operations.
+    if (!$arguments['is_temp'] && is_resource($original_res)) {
+      imagedestroy($original_res);
+    }
+
     return TRUE;
   }
 
