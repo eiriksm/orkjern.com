@@ -1,0 +1,22 @@
+uuid: 593a9ce0-fe98-4859-9ba0-ac05d5e8157c
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - orkjern_theme
+_core:
+  default_config_hash: 5MNdk3fpMKx_xxBTcz2T11DL4XEU1H5SgHl8BsYdFsA
+id: orkjern_theme_messages
+theme: orkjern_theme
+region: title
+weight: 0
+provider: null
+plugin: system_messages_block
+settings:
+  id: system_messages_block
+  label: 'Status messages'
+  provider: system
+  label_display: '0'
+visibility: {  }
