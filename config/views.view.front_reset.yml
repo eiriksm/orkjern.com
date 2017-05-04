@@ -549,7 +549,7 @@ display:
           expose:
             label: ''
           granularity: second
-      title: 'Front reset'
+      title: Home
       header: {  }
       footer: {  }
       empty: {  }

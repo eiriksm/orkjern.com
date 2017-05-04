@@ -17,7 +17,7 @@ casper.test.begin('The page works without JavaScript as well', function(test) {
     this.waitForSelector('.node__meta', function waitSuccess() {
       // To check that this was loaded via ajax, and not via going to the URL,
       // we check for a selector that only exists on full pageloads.
-      test.assertDoesntExist('div[data-quickedit-field-id]', 'Page was loaded via ajax');
+      test.assertDoesntExist('span[data-property="is-server-rendered"]', 'Page was loaded via ajax');
       test.assertExists('.node__content p:first-child');
     });
     this.then(function() {
@@ -28,8 +28,8 @@ casper.test.begin('The page works without JavaScript as well', function(test) {
     this.then(function() {
       casper.open(url);
     });
-    this.waitForSelector('div[data-quickedit-field-id]', function() {
-      test.assertExist('div[data-quickedit-field-id]', 'Page was loaded via regular page load.');
+    this.waitForSelector('span[data-property="is-server-rendered"]', function() {
+      test.assertExist('span[data-property="is-server-rendered"]', 'Page was loaded via regular page load.');
       test.assertEqual(casper.getCurrentUrl(), url, 'URL is the same on non-ajax page (of course it is)');
       test.assertEqual(title.trim(), casper.fetchText('#page-title').trim(), 'Title is the same on ajax and non-ajax page');
       var text1 = plainText(text);
