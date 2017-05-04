@@ -37,7 +37,6 @@ mysql:
 install:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - export TEST_URL="http://localhost:8080"
-  - composer global require drush/drush:dev-master
 
 before_script:
   - /bin/bash scripts/travis.sh
