@@ -1,11 +1,7 @@
 language: php
 php:
-  - 5.5
-  - 5.6
   - 7.0
   - nightly
-  - hhvm
-  - hhvm-nightly
 
 sudo: false
 
@@ -18,10 +14,7 @@ addons:
 matrix:
   fast_finish: true
   allow_failures:
-    - php: 7.0
     - php: nightly
-    - php: hhvm
-    - php: hhvm-nightly
 
 env:
   global:
@@ -37,7 +30,6 @@ mysql:
 install:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - export TEST_URL="http://localhost:8080"
-  - composer global require drush/drush:dev-master
 
 before_script:
   - /bin/bash scripts/travis.sh
