@@ -69,6 +69,13 @@
         ],
         "post-update-cmd": [
             "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+        ],
+        "build": [
+            "git pull",
+            "composer install",
+            "./vendor/bin/drush --root=$(pwd)/web updb -y",
+            "./vendor/bin/drush --root=$(pwd)/web cim -y",
+            "./vendor/bin/drush --root=$(pwd)/web cr"
         ]
     },
     "extra": {
