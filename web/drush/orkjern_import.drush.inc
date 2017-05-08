@@ -45,7 +45,7 @@ function drush_orkjern_import_download_nodes() {
       'Accept' => 'application/hal+json',
     ],
   ];
-  $response = $client->get($url . '/node?_format=json', $hal_headers);
+  $response = $client->get($url . '/api/node?_format=hal_json', $hal_headers);
   $code = $response->getStatusCode();
   $import_directory = 'import';
   file_prepare_directory($import_directory, FILE_CREATE_DIRECTORY);
@@ -58,7 +58,7 @@ function drush_orkjern_import_download_nodes() {
       // So for each one of these, try to create a node.
       foreach ($nodes as $node) {
         // Get full view of this one.
-        $node_url = $url . $node->path . '?_format=json';
+        $node_url = $url . $node->path . '?_format=hal_json';
         \Drupal::logger('orkjern_import')->notice('Requesting ' . $node_url);
         $node_res = $client->get($node_url, $hal_headers);
         $c = $node_res->getStatusCode();
@@ -77,6 +77,7 @@ function drush_orkjern_import_download_nodes() {
     }
     catch (Exception $e) {
       drush_log('Had a horrible problem', 'error');
+      drush_log($e->getMessage(), 'error');
       drush_log($e->getTraceAsString(), 'error');
     }
   }
@@ -135,6 +136,9 @@ function drush_orkjern_import_import_nodes() {
         $tags = explode('<li>', $node->field_tags);
         foreach ($tags as $tag) {
           $tag = trim(strip_tags($tag));
+          if ($tag == 'Tags:') {
+            continue;
+          }
           $length = strlen($tag);
           if ($length > 0) {
             if (!$has_tags[$tag]) {
