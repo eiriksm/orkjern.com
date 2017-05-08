@@ -665,7 +665,7 @@ display:
       pager:
         type: some
         options:
-          items_per_page: 10
+          items_per_page: 0
           offset: 0
       fields:
         path:
