@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "94393cab3585ee4e3efd6bb7a00cffb7",
+    "content-hash": "5d403d809b28c9d23cd2b4f402f5e848",
     "packages": [
         {
             "name": "alchemy/zippy",
@@ -5623,16 +5623,16 @@
         },
         {
             "name": "jcalderonzumba/gastonjs",
-            "version": "v1.0.3",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jcalderonzumba/gastonjs.git",
-                "reference": "4ff4a788d4995ae0d4b45fdcb1b76650e2eec72a"
+                "reference": "575a9c18d8b87990c37252e8d9707b29f0a313f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jcalderonzumba/gastonjs/zipball/4ff4a788d4995ae0d4b45fdcb1b76650e2eec72a",
-                "reference": "4ff4a788d4995ae0d4b45fdcb1b76650e2eec72a",
+                "url": "https://api.github.com/repos/jcalderonzumba/gastonjs/zipball/575a9c18d8b87990c37252e8d9707b29f0a313f3",
+                "reference": "575a9c18d8b87990c37252e8d9707b29f0a313f3",
                 "shasum": ""
             },
             "require": {
@@ -5676,7 +5676,7 @@
                 "headless",
                 "phantomjs"
             ],
-            "time": "2016-05-04T16:27:07+00:00"
+            "time": "2017-03-31T07:31:47+00:00"
         },
         {
             "name": "jcalderonzumba/mink-phantomjs-driver",
