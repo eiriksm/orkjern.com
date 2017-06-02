@@ -34,7 +34,7 @@
         "eiriksm/orkjern_theme_cache": "dev-master",
         "drupal/coffee": "^1.0@beta",
         "drupal/admin_toolbar": "^1.19",
-        "drupal/sparkpost": "^2.0@alpha",
+        "drupal/sparkpost": "~2.0.0-beta1",
         "drupal/restui": "^1.14"
     },
     "require-dev": {
