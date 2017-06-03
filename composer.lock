@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "64a316b29235a2405459132da3363146",
+    "content-hash": "41871c5be42ae89c7851930797381307",
     "packages": [
         {
             "name": "alchemy/zippy",
@@ -1758,17 +1758,17 @@
         },
         {
             "name": "drupal/sparkpost",
-            "version": "2.0.0-alpha2",
+            "version": "2.0.0-beta1",
             "source": {
                 "type": "git",
                 "url": "https://git.drupal.org/project/sparkpost",
-                "reference": "8.x-2.0-alpha2"
+                "reference": "8.x-2.0-beta1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/sparkpost-8.x-2.0-alpha2.zip",
-                "reference": "8.x-2.0-alpha2",
-                "shasum": "69a5d7ea13565c41c4fafee7162a3223c843db95"
+                "url": "https://ftp.drupal.org/files/projects/sparkpost-8.x-2.0-beta1.zip",
+                "reference": null,
+                "shasum": "b553bab26ed458c194ed1f3c42566184ce0750cb"
             },
             "require": {
                 "drupal/core": "~8.0",
@@ -1781,8 +1781,8 @@
                     "dev-2.x": "2.x-dev"
                 },
                 "drupal": {
-                    "version": "8.x-2.0-alpha2",
-                    "datestamp": "1490197383"
+                    "version": "8.x-2.0-beta1",
+                    "datestamp": "1496414043"
                 }
             },
             "notification-url": "https://packages.drupal.org/8/downloads",
@@ -6656,8 +6656,7 @@
     "stability-flags": {
         "eiriksm/orkjern_theme": 20,
         "eiriksm/orkjern_theme_cache": 20,
-        "drupal/coffee": 10,
-        "drupal/sparkpost": 15
+        "drupal/coffee": 10
     },
     "prefer-stable": true,
     "prefer-lowest": false,
