@@ -43,8 +43,7 @@
         "jcalderonzumba/gastonjs": "~v1.2.0",
         "jcalderonzumba/mink-phantomjs-driver": "~0.3.1",
         "mikey179/vfsstream": "~1.2",
-        "phpunit/phpunit": "~4.8.36",
-        "symfony/css-selector": "~v2.8.23"
+        "phpunit/phpunit": "~4.8.36"
     },
     "conflict": {
         "drupal/drupal": "*"
