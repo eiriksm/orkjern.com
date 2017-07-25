@@ -1,5 +1,6 @@
 #!/bin/bash
-phantomjs --webdriver=8643 &
+npm i phantomjs-prebuilt
+./node_modules/.bin/phantomjs --webdriver=8643 &
 composer install
 cd web
 php -d sendmail_path=`which true` ../vendor/bin/drush.php si minimal --db-url="mysql://$DB_USERNAME@127.0.0.1/$DATABASE" -y
