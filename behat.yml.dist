@@ -1,0 +1,30 @@
+default:
+  autoload:
+    - './tests/src/Context'
+  suites:
+    default:
+      paths:
+        features: %paths.base%/tests/features
+      filters:
+        tags: "~@todo"
+      contexts:
+        - eiriksm\Orkjern\Tests\Context\FeatureContext
+        - Drupal\DrupalExtension\Context\DrupalContext
+        - Drupal\DrupalExtension\Context\MinkContext
+        - Drupal\DrupalExtension\Context\MarkupContext
+        - Drupal\DrupalExtension\Context\MessageContext
+        - Drupal\DrupalExtension\Context\DrushContext
+  extensions:
+    Behat\MinkExtension:
+      files_path: %paths.base%/tests/files
+      base_url: http://127.0.0.1:8888
+      goutte: ~
+      selenium2:
+        wd_host: http://localhost:8643/wd/hub
+    Drupal\DrupalExtension:
+      blackbox: ~
+      drupal:
+        drupal_root: %paths.base%/web
+      api_driver: 'drupal'
+      region_map:
+        title: ".region-title"

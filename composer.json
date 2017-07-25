@@ -38,12 +38,9 @@
         "drupal/restui": "^1.14"
     },
     "require-dev": {
-        "behat/mink": "~1.7",
-        "behat/mink-goutte-driver": "~1.2",
-        "jcalderonzumba/gastonjs": "~v1.2.0",
-        "jcalderonzumba/mink-phantomjs-driver": "~0.3.1",
-        "mikey179/vfsstream": "~1.2",
-        "phpunit/phpunit": "~4.8.36"
+        "drupal/drupal-extension": "^3.3",
+        "eiriksm/wait-for-listen": "^1.0",
+        "drupal/coder": "^8.2"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -53,7 +50,8 @@
     "autoload": {
         "classmap": [
             "scripts/composer/ScriptHandler.php"
-        ]
+        ],
+        "psr-4": { "eiriksm\\Orkjern\\Tests\\": "tests/src" }
     },
     "scripts": {
         "drupal-scaffold": "DrupalComposer\\DrupalScaffold\\Plugin::scaffold",
@@ -75,6 +73,10 @@
             "./vendor/bin/drush --root=$(pwd)/web updb -y",
             "./vendor/bin/drush --root=$(pwd)/web cim -y",
             "./vendor/bin/drush --root=$(pwd)/web cr"
+        ],
+        "test": [
+            "./vendor/bin/phpcs -p -n",
+            "./vendor/bin/behat --colors"
         ]
     },
     "extra": {

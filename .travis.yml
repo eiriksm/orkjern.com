@@ -6,6 +6,7 @@ php:
 sudo: false
 
 addons:
+  chrome: stable
   apt:
     packages:
       - php5-cgi
@@ -27,13 +28,8 @@ mysql:
   username: $DB_USERNAME
   encoding: $DB_ENCODE
 
-install:
-  - export PATH="$HOME/.composer/vendor/bin:$PATH"
-  - export TEST_URL="http://localhost:8080"
-
 before_script:
   - /bin/bash scripts/travis.sh
 
 script:
-  - npm install
-  - npm test
+  - composer test
