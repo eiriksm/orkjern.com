@@ -1,7 +1,5 @@
 #!/bin/bash
-npm i chromedriver
-./node_modules/.bin/chromedriver --port=8643 --url-base=wd/hub &
-google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
+phantomjs --webdriver=8643 &
 composer install
 cd web
 php -d sendmail_path=`which true` ../vendor/bin/drush.php si minimal --db-url="mysql://$DB_USERNAME@127.0.0.1/$DATABASE" -y
