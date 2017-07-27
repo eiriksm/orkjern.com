@@ -4,6 +4,7 @@ Feature: Navigation, taxonomy
     Given I am an anonymous user
     When I am on the homepage
     And I click the selector ".field-type-taxonomy-term-reference a"
+    And I wait for selector "section.section > div.content" to appear.
     Then selector 'span[data-property="is-server-rendered"]' should not exist.
     And selector ".view-taxonomy-term" should not exist.
 

@@ -5,6 +5,7 @@ Feature: No JS
     When I am on the homepage
     And I click the selector ".views-field-title a"
     # First load is ajax loaded.
+    And I wait for selector ".node__content p:first-child" to appear.
     Then selector 'span[data-property="is-server-rendered"]' should not exist.
     And selector ".node__content p:first-child" should exist.
     And I remember the URL

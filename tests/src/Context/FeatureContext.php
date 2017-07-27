@@ -81,4 +81,24 @@ class FeatureContext extends RawDrupalContext {
     }
   }
 
+  /**
+   * @When I wait for selector :selector to appear.
+   */
+  public function iWaitForSelectorToAppear($selector) {
+    $page = $this->getSession()->getPage();
+    $not_found = TRUE;
+    $time = 0;
+    while ($not_found) {
+      $element = $page->find('css', $selector);
+      $time++;
+      if (!empty($element)) {
+        $not_found = FALSE;
+      }
+      sleep(1);
+      if ($time > 10) {
+        throw new \Exception('Selector did not appear within 10 seconds');
+      }
+    }
+  }
+
 }
