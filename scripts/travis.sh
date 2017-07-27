@@ -1,4 +1,6 @@
 #!/bin/bash
+npm i phantomjs-prebuilt
+./node_modules/.bin/phantomjs --webdriver=8643 &
 composer install
 cd web
 php -d sendmail_path=`which true` ../vendor/bin/drush.php si minimal --db-url="mysql://$DB_USERNAME@127.0.0.1/$DATABASE" -y
@@ -6,6 +8,6 @@ php -d sendmail_path=`which true` ../vendor/bin/drush.php si minimal --db-url="m
 ../vendor/bin/drush cim -y
 ../vendor/bin/drush download-nodes
 ../vendor/bin/drush import-nodes
-../vendor/bin/drush runserver 127.0.0.1:8080 &
-echo "waiting for webserver..."
-sleep 8;
+../vendor/bin/drush runserver 127.0.0.1:8888 &
+../vendor/bin/wait-for-listen 8888
+../vendor/bin/wait-for-listen 8643 127.0.0.1
