@@ -1,0 +1,6 @@
+services:
+  orkjern_custom.commands:
+    class: \Drupal\orkjern_custom\Commands\OrkjernCustomCommands
+    arguments: ['@http_client', '@entity_type.manager']
+    tags:
+      - { name: drush.command }
