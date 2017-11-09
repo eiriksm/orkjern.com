@@ -8,6 +8,7 @@ php -d sendmail_path=`which true` ../vendor/bin/drush si minimal --db-url="mysql
 ../vendor/bin/drush cim -y
 ../vendor/bin/drush download-nodes
 ../vendor/bin/drush import-nodes
+../vendor/bin/drush cr
 ../vendor/bin/drush runserver 127.0.0.1:8888 &
 ../vendor/bin/wait-for-listen 8888
 ../vendor/bin/wait-for-listen 8643 127.0.0.1
