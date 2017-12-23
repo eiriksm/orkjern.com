@@ -13,6 +13,7 @@ module:
   hal: 0
   image: 0
   node: 0
+  orkjern_custom: 0
   orkjern_theme_cache: 0
   page_cache: 0
   path: 0
