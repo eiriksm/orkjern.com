@@ -1403,8 +1403,8 @@
                     "dev-1.x": "1.x-dev"
                 },
                 "drupal": {
-                    "version": "8.x-1.20",
-                    "datestamp": "1505199844",
+                    "version": "8.x-1.21",
+                    "datestamp": "1511283695",
                     "security-coverage": {
                         "status": "covered",
                         "message": "Covered by Drupal's security advisory policy"
@@ -2326,12 +2326,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/eiriksm/orkjern_theme.git",
-                "reference": "52e6ed1d80f588796ff9bc754c071b20e53243a7"
+                "reference": "1850985fe9c598658958e59f0c320761b688a799"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eiriksm/orkjern_theme/zipball/52e6ed1d80f588796ff9bc754c071b20e53243a7",
-                "reference": "52e6ed1d80f588796ff9bc754c071b20e53243a7",
+                "url": "https://api.github.com/repos/eiriksm/orkjern_theme/zipball/1850985fe9c598658958e59f0c320761b688a799",
+                "reference": "1850985fe9c598658958e59f0c320761b688a799",
                 "shasum": ""
             },
             "type": "drupal-theme",
@@ -2349,7 +2349,7 @@
                 "source": "https://github.com/eiriksm/orkjern_theme/tree/master",
                 "issues": "https://github.com/eiriksm/orkjern_theme/issues"
             },
-            "time": "2017-07-25T06:55:34+00:00"
+            "time": "2017-12-23T15:21:49+00:00"
         },
         {
             "name": "eiriksm/orkjern_theme_cache",
