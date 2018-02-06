@@ -24,17 +24,17 @@
         }
     ],
     "require": {
-        "composer/installers": "~v1.3.0",
-        "drupal-composer/drupal-scaffold": "~2.3.0",
+        "composer/installers": "^1.3.0",
+        "drupal-composer/drupal-scaffold": "^2.3.0",
         "cweagans/composer-patches": "~1.0",
         "drupal/core": "^8.4",
         "drush/drush": "^9@beta",
-        "drupal/console": "~1.0.0-rc25",
+        "drupal/console": "^1.0",
         "eiriksm/orkjern_theme": "dev-master",
         "eiriksm/orkjern_theme_cache": "dev-master",
         "drupal/coffee": "^1.0@beta",
         "drupal/admin_toolbar": "^1.19",
-        "drupal/sparkpost": "~2.0.0-beta1",
+        "drupal/sparkpost": "^2.0.0-beta1",
         "drupal/restui": "^1.14"
     },
     "require-dev": {
