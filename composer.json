@@ -21,6 +21,21 @@
         {
             "type": "vcs",
             "url": "https://github.com/eiriksm/orkjern_theme_cache"
+        },
+        {
+          "package": {
+            "dist": {
+              "type": "zip",
+              "url": "https://download.ckeditor.com/codesnippet/releases/codesnippet_4.7.3.zip"
+            },
+            "name": "ckeditor/codesnippet",
+            "require": {
+              "composer/installers": "~1.0"
+            },
+            "type": "drupal-library",
+            "version": "4.7.3"
+          },
+          "type": "package"
         }
     ],
     "require": {
@@ -35,7 +50,9 @@
         "drupal/coffee": "^1.0@beta",
         "drupal/admin_toolbar": "^1.19",
         "drupal/sparkpost": "^2.0.0-beta1",
-        "drupal/restui": "^1.14"
+        "drupal/restui": "^1.14",
+        "drupal/codesnippet": "^1.6",
+        "ckeditor/codesnippet": "^4.7"
     },
     "require-dev": {
         "drupal/drupal-extension": "^3.3",
