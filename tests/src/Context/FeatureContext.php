@@ -60,7 +60,7 @@ class FeatureContext extends RawDrupalContext {
   public function iRememberTheTextInElementAs($selector, $name) {
     $page = $this->getSession()->getPage();
     $element = $page->find('css', $selector);
-    $this->textContents[$name] = $element->getText();
+    $this->textContents[$name] = trim($element->getText());
   }
 
   /**
