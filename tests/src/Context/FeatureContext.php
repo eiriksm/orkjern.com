@@ -60,7 +60,7 @@ class FeatureContext extends RawDrupalContext {
   public function iRememberTheTextInElementAs($selector, $name) {
     $page = $this->getSession()->getPage();
     $element = $page->find('css', $selector);
-    $this->textContents[$name] = $element->getText();
+    $this->textContents[$name] = trim($element->getText());
   }
 
   /**
@@ -77,6 +77,10 @@ class FeatureContext extends RawDrupalContext {
     $page = $this->getSession()->getPage();
     $element = $page->find('css', $selector);
     if ($element->getText() != $this->textContents[$name]) {
+      var_dump([
+        'stored' => $this->textContents[$name],
+        'new' => $element->getText()
+      ]);
       throw new \Exception('Text did not equal stored text');
     }
   }
