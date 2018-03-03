@@ -80,7 +80,7 @@ class FeatureContext extends RawDrupalContext {
       var_dump([
         'stored' => $this->textContents[$name],
         'new' => $element->getText()
-      ])
+      ]);
       throw new \Exception('Text did not equal stored text');
     }
   }
