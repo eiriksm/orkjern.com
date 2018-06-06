@@ -1,6 +1,6 @@
 #!/bin/bash
-npm i phantomjs-prebuilt
-./node_modules/.bin/phantomjs --webdriver=8643 &
+npm install chromedriver@2.35
+./node_modules/.bin/chromedriver --port=8643 --url-base=wd/hub &
 composer install
 cd web
 php -d sendmail_path=`which true` ../vendor/bin/drush si minimal --db-url="mysql://$DB_USERNAME@127.0.0.1/$DATABASE" -y

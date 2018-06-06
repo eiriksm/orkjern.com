@@ -21,6 +21,12 @@ default:
       goutte: ~
       selenium2:
         wd_host: http://localhost:8643/wd/hub
+        capabilities:
+          chrome:
+            switches:
+              - "--headless"
+              - "--disable-gpu"
+              - "--no-sandbox"
     Drupal\DrupalExtension:
       blackbox: ~
       drupal:
