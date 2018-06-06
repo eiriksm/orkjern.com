@@ -21,7 +21,6 @@ module:
   page_cache: 0
   path: 0
   rest: 0
-  restui: 0
   serialization: 0
   sparkpost: 0
   system: 0
