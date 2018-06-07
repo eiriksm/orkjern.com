@@ -50,7 +50,6 @@
         "drupal/coffee": "^1.0@beta",
         "drupal/admin_toolbar": "^1.19",
         "drupal/sparkpost": "^2.0.0-beta1",
-        "drupal/restui": "^1.14",
         "drupal/codesnippet": "^1.6",
         "ckeditor/codesnippet": "^4.7"
     },
