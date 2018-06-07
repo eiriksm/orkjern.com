@@ -32,5 +32,4 @@ before_script:
 script:
   - composer test
   - drush cex -y
-  - git status
-  - [[ -z $(git status -s) ]] || exit 1
+  - /bin/bash scripts/travis-check.sh
