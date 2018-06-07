@@ -31,3 +31,4 @@ before_script:
 
 script:
   - composer test
+  - /bin/bash scripts/travis-check.sh
