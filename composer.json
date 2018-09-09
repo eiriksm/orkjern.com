@@ -51,7 +51,8 @@
         "drupal/admin_toolbar": "^1.19",
         "drupal/sparkpost": "^2.0.0-beta1",
         "drupal/codesnippet": "^1.6",
-        "ckeditor/codesnippet": "^4.7"
+        "ckeditor/codesnippet": "^4.7",
+        "drupal/monolog": "^1.0"
     },
     "require-dev": {
         "drupal/drupal-extension": "^3.3",
