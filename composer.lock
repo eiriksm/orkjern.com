@@ -3235,12 +3235,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/eiriksm/orkjern_theme.git",
-                "reference": "1850985fe9c598658958e59f0c320761b688a799"
+                "reference": "ed6f84b5d0e6f73adeace2b02a897aa354a2af6d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eiriksm/orkjern_theme/zipball/1850985fe9c598658958e59f0c320761b688a799",
-                "reference": "1850985fe9c598658958e59f0c320761b688a799",
+                "url": "https://api.github.com/repos/eiriksm/orkjern_theme/zipball/ed6f84b5d0e6f73adeace2b02a897aa354a2af6d",
+                "reference": "ed6f84b5d0e6f73adeace2b02a897aa354a2af6d",
                 "shasum": ""
             },
             "type": "drupal-theme",
@@ -3258,7 +3258,7 @@
                 "source": "https://github.com/eiriksm/orkjern_theme/tree/master",
                 "issues": "https://github.com/eiriksm/orkjern_theme/issues"
             },
-            "time": "2017-12-23T15:21:49+00:00"
+            "time": "2019-04-14T10:48:40+00:00"
         },
         {
             "name": "eiriksm/orkjern_theme_cache",
