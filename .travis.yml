@@ -6,10 +6,6 @@ sudo: false
 
 addons:
   chrome: stable
-  apt:
-    packages:
-      - php5-cgi
-      - php5-mysql
 
 matrix:
   fast_finish: true
