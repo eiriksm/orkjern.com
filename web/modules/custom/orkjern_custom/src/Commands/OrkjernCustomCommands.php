@@ -45,6 +45,10 @@ class OrkjernCustomCommands extends DrushCommands {
     $url = 'http://api.orkjern.com';
     // Try to get a list of all nodes.
     $hal_headers = [
+      'auth' => [
+        'eiriksm',
+        '7Y2ve8Bd6LwQ6M7AY9Ut',
+      ],
       'headers' => [
         'Accept' => 'application/hal+json',
       ],
