@@ -46,8 +46,8 @@ class OrkjernCustomCommands extends DrushCommands {
     // Try to get a list of all nodes.
     $hal_headers = [
       'auth' => [
-        'eiriksm',
-        '7Y2ve8Bd6LwQ6M7AY9Ut',
+        getenv('BASIC_AUTH_USERNAME'),
+        getenv('BASIC_AUTH_PASSWORD'),
       ],
       'headers' => [
         'Accept' => 'application/hal+json',
