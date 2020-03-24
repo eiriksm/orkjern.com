@@ -15,7 +15,6 @@ module:
   hal: 0
   image: 0
   jsonapi: 0
-  monolog: 0
   node: 0
   orkjern_custom: 0
   orkjern_theme_cache: 0

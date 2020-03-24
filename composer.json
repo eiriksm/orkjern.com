@@ -47,7 +47,6 @@
         "drupal/console": "^1.0",
         "eiriksm/orkjern_theme": "dev-master",
         "eiriksm/orkjern_theme_cache": "dev-master",
-        "drupal/coffee": "^1.0@beta",
         "drupal/admin_toolbar": "^1.19",
         "drupal/sparkpost": "^2.0.0-beta1",
         "drupal/codesnippet": "^1.6",
