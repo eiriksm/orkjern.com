@@ -1,7 +1,6 @@
 os: linux
 arch: arm64-graviton2
 group: edge
-virt: lxd
 language: php
 php:
   - 7.1
