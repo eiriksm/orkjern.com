@@ -1,0 +1,58 @@
+name: Test
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: 'ubuntu-22.04'
+    strategy:
+      fail-fast: true
+      matrix:
+        php-version:
+          - "7.3"
+    env:
+      BASIC_AUTH_USERNAME: ${{ secrets.BASIC_AUTH_USERNAME }}
+      BASIC_AUTH_PASSWORD: ${{ secrets.BASIC_AUTH_PASSWORD }}
+    services:
+      db:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+
+      - name: Update composer
+        run: composer --verbose self-update --1
+
+      - name: Dump composer verson
+        run: composer --version
+
+      - name: Validate composer.json
+        run: composer --verbose validate
+
+      - name: Install dependencies
+        run: composer --verbose install
+
+      - name: Run whatever that travis thing did in before script?
+        run: /bin/bash scripts/travis.sh
+
+      - name: Run whatever that travis thing did in script?
+        run: |
+          composer test
+          /bin/bash scripts/travis-check.sh
+
