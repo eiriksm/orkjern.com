@@ -17,6 +17,9 @@ jobs:
       matrix:
         php-version:
           - "7.3"
+    env:
+      BASIC_AUTH_USERNAME: ${{ secrets.BASIC_AUTH_USERNAME }}
+      BASIC_AUTH_PASSWORD: ${{ secrets.BASIC_AUTH_PASSWORD }}
     services:
       db:
         image: mysql:5.7
