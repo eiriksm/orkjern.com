@@ -3,6 +3,7 @@
 set -euo pipefail
 
 npm install chromedriver@2.35
+git clean -f package*
 ./node_modules/.bin/chromedriver --port=8643 --url-base=wd/hub &
 composer install
 cd web
