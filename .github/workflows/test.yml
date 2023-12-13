@@ -37,7 +37,7 @@ jobs:
           php-version: ${{ matrix.php-version }}
 
       - name: Update composer
-        run: composer --verbose self-update --1
+        run: composer --verbose self-update --2
 
       - name: Dump composer verson
         run: composer --version
