@@ -32,6 +32,18 @@ class FeatureContext extends RawDrupalContext {
   }
 
   /**
+   * Start each javascript scenario with a fresh browser.
+   *
+   * Pages are sent with a long max-age, so the browser would otherwise show
+   * a cached front page linking to nodes deleted after the previous scenario.
+   *
+   * @AfterScenario @javascript
+   */
+  public function stopBrowser() {
+    $this->getSession()->stop();
+  }
+
+  /**
    * @When I click the selector :selector
    */
   public function iClickTheSelector($selector) {

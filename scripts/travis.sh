@@ -2,9 +2,8 @@
 
 set -euo pipefail
 
-npm install chromedriver@2.35
-git clean -f package*
-./node_modules/.bin/chromedriver --port=8643 --url-base=wd/hub &
+# Use the chromedriver that ships with the runner, so it matches its Chrome.
+"$CHROMEWEBDRIVER/chromedriver" --port=8643 --url-base=wd/hub &
 composer install
 cd web
 mysql -u root -proot -h 127.0.0.1 -e "CREATE DATABASE db;"

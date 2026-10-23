@@ -18,6 +18,7 @@ default:
     Behat\MinkExtension:
       files_path: %paths.base%/tests/files
       base_url: http://127.0.0.1:8888
+      browser_name: chrome
       goutte: ~
       selenium2:
         wd_host: http://localhost:8643/wd/hub
