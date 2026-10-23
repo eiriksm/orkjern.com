@@ -3,10 +3,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   test:
@@ -16,7 +16,7 @@ jobs:
       fail-fast: true
       matrix:
         php-version:
-          - "7.4"
+          - "8.2"
     services:
       db:
         image: mysql:5.7
@@ -32,6 +32,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
+        env:
+          update: true
 
       - name: Update composer
         run: composer --verbose self-update --2
