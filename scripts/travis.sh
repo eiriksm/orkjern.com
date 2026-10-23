@@ -8,12 +8,7 @@ git clean -f package*
 composer install
 cd web
 mysql -u root -proot -h 127.0.0.1 -e "CREATE DATABASE db;"
-php -d sendmail_path=`which true` ../vendor/bin/drush si minimal --db-url="mysql://root:root@127.0.0.1:3306/db" -y
-../vendor/bin/drush cset system.site uuid 5ffb47de-ba4e-4ba3-8a97-3c7bcfbdfa84 -y
-../vendor/bin/drush cim -y
-../vendor/bin/drush download-nodes
-../vendor/bin/drush import-nodes
-../vendor/bin/drush cr
+php -d sendmail_path=`which true` ../vendor/bin/drush si --existing-config --db-url="mysql://root:root@127.0.0.1:3306/db" -y
 ../vendor/bin/drush runserver 127.0.0.1:8888 &
 ../vendor/bin/wait-for-listen 8888
 ../vendor/bin/wait-for-listen 8643 127.0.0.1

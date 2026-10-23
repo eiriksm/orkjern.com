@@ -1,5 +1,8 @@
 @api @javascript
 Feature: Navigation
+  Background:
+    Given there are 12 articles tagged "drupal"
+
   Scenario: The navigation system is working
     Given I am an anonymous user
     When I am on the homepage

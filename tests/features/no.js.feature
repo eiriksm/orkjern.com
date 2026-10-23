@@ -1,5 +1,8 @@
 @api @javascript
 Feature: No JS
+  Background:
+    Given there are 12 articles tagged "drupal"
+
   Scenario: The content should be the same, if the user uses javascript or not
     Given I am an anonymous user
     When I am on the homepage
