@@ -4,7 +4,7 @@ default:
   suites:
     default:
       paths:
-        features: %paths.base%/tests/features
+        features: '%paths.base%/tests/features'
       filters:
         tags: "~@todo"
       contexts:
@@ -16,7 +16,7 @@ default:
         - Drupal\DrupalExtension\Context\DrushContext
   extensions:
     Behat\MinkExtension:
-      files_path: %paths.base%/tests/files
+      files_path: '%paths.base%/tests/files'
       base_url: http://127.0.0.1:8888
       browser_name: chrome
       goutte: ~
@@ -31,7 +31,7 @@ default:
     Drupal\DrupalExtension:
       blackbox: ~
       drupal:
-        drupal_root: %paths.base%/web
+        drupal_root: '%paths.base%/web'
       api_driver: 'drupal'
       region_map:
         title: ".region-title"

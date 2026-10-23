@@ -38,10 +38,6 @@ settings:
             - CodeSnippet
             - Source
   plugins:
-    language:
-      language_list: un
-    stylescombo:
-      styles: ''
     codesnippet:
       highlight_style: github
       highlight_languages:
