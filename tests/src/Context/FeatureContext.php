@@ -10,6 +10,40 @@ class FeatureContext extends RawDrupalContext {
   private $textContents;
 
   /**
+   * @Given there are :count articles tagged :tag
+   */
+  public function thereAreArticlesTagged($count, $tag) {
+    $this->termCreate((object) [
+      'name' => $tag,
+      'vocabulary_machine_name' => 'tags',
+    ]);
+    for ($i = 1; $i <= $count; $i++) {
+      $this->nodeCreate((object) [
+        'type' => 'article',
+        'title' => "Test article $i",
+        'body:value' => "<p>This is test article number $i.</p><p>It has two paragraphs.</p>",
+        'body:format' => 'full_html',
+        'field_tags' => $tag,
+        'promote' => 1,
+        'status' => 1,
+        'uid' => 1,
+      ]);
+    }
+  }
+
+  /**
+   * Start each javascript scenario with a fresh browser.
+   *
+   * Pages are sent with a long max-age, so the browser would otherwise show
+   * a cached front page linking to nodes deleted after the previous scenario.
+   *
+   * @AfterScenario @javascript
+   */
+  public function stopBrowser() {
+    $this->getSession()->stop();
+  }
+
+  /**
    * @When I click the selector :selector
    */
   public function iClickTheSelector($selector) {
